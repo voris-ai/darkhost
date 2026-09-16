@@ -1049,7 +1049,7 @@ function addParkingLightPole(x, z) {
 
 // ─── 40 HOUSES NEIGHBORHOOD (RESIDENTIAL DISTRICT FOR "ДОМ И ВЫЕЗДЫ") ───────
 const dracoLoader = new THREE.DRACOLoader();
-dracoLoader.setDecoderPath("https://www.gstatic.com/draco/versioned/decoders/1.4.3/");
+dracoLoader.setDecoderPath("models/draco/"); // vendored from three@0.128 (works offline / on static hosting)
 
 const gltfLoader = new THREE.GLTFLoader();
 gltfLoader.setDRACOLoader(dracoLoader);
