@@ -1923,8 +1923,9 @@ function oncomingClear(v, range = 55) {
   });
 }
 // Civilian cars: pull out into the oncoming lane to pass a van that has stopped to park, then merge back
+const OVERTAKE_ENABLED = false; // off: pulling into the oncoming lane read as driving against traffic
 function updateOvertake(v, dt) {
-  if (v.stops.length) return; // company vans never overtake
+  if (v.stops.length || !OVERTAKE_ENABLED) { v.lat = 0; v.overtaking = null; return; } // company vans never overtake
   if (!v.overtaking) {
     const van = v.speed < 0.8 ? stoppedVanAhead(v) : null;
     if (van && oncomingClear(v)) v.overtaking = van;
@@ -2503,18 +2504,49 @@ const people = [];
 const CHAR_H = 1.78;
 const BRANDC = { navy: 0x033d53, green: 0x52b369, white: 0xf4f4f2, hiVis: 0xd4ff3a, charcoal: 0x2b3038, black: 0x15181c, teal: 0x0f766e };
 const SKINS = [0xf1c7a8, 0xd9a577, 0xb97a56, 0x8d5a3b];
+// Uniforms follow the six real CRM roles (staff_users.role): owner, manager, receptionist («оператор»),
+// driver, washer, packer. Each staff member also wears a floating role badge (see roleBadge).
+const ROLE_LABEL = { owner: "Владелец", manager: "Менеджер", operator: "Оператор", driver: "Водитель", washer: "Мойщик", packer: "Упаковщик" };
 const U = {
-  washer: { model: "worker", recolor: { Worker_Yellow: BRANDC.navy, Grey: BRANDC.navy, LightBrown: BRANDC.charcoal, Brown2: BRANDC.charcoal, Brown: BRANDC.charcoal, Worker_Vest: BRANDC.green } },
-  loader: { model: "worker", recolor: { Worker_Yellow: BRANDC.green, Grey: BRANDC.green, LightBrown: BRANDC.navy, Brown2: BRANDC.navy, Brown: BRANDC.navy, Worker_Vest: BRANDC.hiVis } },
-  driver: { model: "casual", recolor: { White: BRANDC.green, LightBlue: BRANDC.navy, Red_Dark: BRANDC.black } },
-  reception: { model: "womanB", recolor: { White: BRANDC.navy, Orange: BRANDC.charcoal } },
-  receptionM: { model: "bizman", recolor: { Suit: BRANDC.navy, Tie: BRANDC.green } },
-  manager: { model: "bizman", recolor: {} },
-  managerW: { model: "womanC", recolor: { LimeGreen: BRANDC.navy, Gold: BRANDC.green } },
-  it: { model: "hoodie", recolor: { Purple: BRANDC.teal, LightBlue: BRANDC.charcoal } },
-  dispatcher: { model: "womanB", recolor: { White: BRANDC.navy, Orange: BRANDC.charcoal, Hair_Blond: 0x2b1d14 } },
-  guard: { model: "bizman", recolor: { Suit: BRANDC.black, Tie: BRANDC.black, Hair: 0x1a1a1a } },
+  // мойщик: navy overall, green vest — works the washing line, centrifuge, dryers, washing machines
+  washer: { role: "washer", model: "worker", recolor: { Worker_Yellow: BRANDC.navy, Grey: BRANDC.navy, LightBrown: BRANDC.charcoal, Brown2: BRANDC.charcoal, Brown: BRANDC.charcoal, Worker_Vest: BRANDC.green } },
+  // упаковщик: green overall, hi-vis vest — intake (bag split, measuring), packing, hand-out, yard sorting
+  packer: { role: "packer", model: "worker", recolor: { Worker_Yellow: BRANDC.green, Grey: BRANDC.green, LightBrown: BRANDC.navy, Brown2: BRANDC.navy, Brown: BRANDC.navy, Worker_Vest: BRANDC.hiVis } },
+  // водитель: green polo, navy trousers — routes, pickups, deliveries
+  driver: { role: "driver", model: "casual", recolor: { White: BRANDC.green, LightBlue: BRANDC.navy, Red_Dark: BRANDC.black } },
+  // оператор: navy blouse / navy suit + green tie — reception desk, new orders, dispatching drivers from the board
+  operator: { role: "operator", model: "womanB", recolor: { White: BRANDC.navy, Orange: BRANDC.charcoal } },
+  operatorM: { role: "operator", model: "bizman", recolor: { Suit: BRANDC.navy, Tie: BRANDC.green } },
+  // менеджер: pricing, routes, cash reconciliation, reports
+  manager: { role: "manager", model: "bizman", recolor: {} },
+  managerW: { role: "manager", model: "womanC", recolor: { LimeGreen: BRANDC.navy, Gold: BRANDC.green } },
+  // владелец: charcoal suit, green tie — owner desk with three monitors
+  owner: { role: "owner", model: "bizman", recolor: { Suit: BRANDC.charcoal, Tie: BRANDC.green } },
 };
+// Role badge: small navy pill floating above the head, one texture per role
+const _badgeTex = {};
+function roleBadge(role) {
+  if (!_badgeTex[role]) {
+    _badgeTex[role] = makeCanvasTexture(512, 128, (ctx, cw, ch) => {
+      ctx.clearRect(0, 0, cw, ch);
+      ctx.fillStyle = "#033D53";
+      const r = ch / 2;
+      ctx.beginPath();
+      ctx.moveTo(r, 0); ctx.lineTo(cw - r, 0); ctx.arc(cw - r, r, r, -Math.PI / 2, Math.PI / 2); ctx.lineTo(r, ch); ctx.arc(r, r, r, Math.PI / 2, -Math.PI / 2);
+      ctx.fill();
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "700 64px Inter, Arial, sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(ROLE_LABEL[role] || role, cw / 2, ch / 2 + 4);
+    });
+  }
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: _badgeTex[role], transparent: true, depthTest: false }));
+  sp.scale.set(1.1, 0.275, 1);
+  sp.position.set(0, CHAR_H + 0.28, 0);
+  sp.renderOrder = 5;
+  return sp;
+}
 const CASUAL_LOOKS = [
   ["casual", { White: 0xb91c1c }], ["casual", { White: 0x6b7280 }], ["casual", { White: 0x0f766e, LightBlue: 0x3b4a6b }],
   ["hoodie", { Purple: 0xeab308 }], ["hoodie", { Purple: 0x6b7280 }], ["hoodie", { Purple: 0xb8a98a, LightBlue: 0x2b3038 }],
@@ -2550,6 +2582,7 @@ function addPerson(o) {
   g.add(root);
   g.position.set(o.x || 0, o.y ?? FLOOR_Y, o.z || 0);
   g.rotation.y = o.rotY || 0;
+  if (o.role) g.add(roleBadge(o.role));
   worldGroup.add(g);
   const mixer = new THREE.AnimationMixer(root);
   const p = { root: g, inner: root, mixer, speed: o.speed || 1.0, actions: {}, tasks: [], floorY: o.y ?? FLOOR_Y, bones: {} };
@@ -2738,11 +2771,14 @@ const G_SHOP = makeGraph(
    [-5.15, -4.0], [-8.0, -4.0], [-10.3, -4.0], [-11.0, -9.0], [-5.0, -9.0], [1.0, -9.0], [-6.5, -6.9], [-11.6, -6.4], [-9.6, -6.4], [2.0, -6.4], [2.0, -8.2]],
   [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 7], [7, 8], [8, 9], [4, 10], [10, 11], [11, 12], [1, 13], [4, 14], [7, 15], [3, 16], [1, 17], [2, 18], [8, 19], [7, 20]]
 );
-const SHOP_ST = [
+const WASH_ST = [
   ST(-11.6, -6.4, FACE.n, "work", 8, 20, 17), ST(-9.6, -6.4, FACE.n, "work", 8, 20, 18), ST(-6.5, -6.9, FACE.n, "work", 6, 14, 16),
   ST(-3.4, -6.9, FACE.n, "work", 6, 12, 5), ST(2.0, -6.4, FACE.e, "work", 6, 14, 19), ST(2.0, -8.2, FACE.e, "work", 6, 14, 20),
-  ST(1.4, -4.3, FACE.s, "work", 8, 16, 9), ST(-1.0, -7.2, FACE.s, "work", 8, 18, 6), ST(-10.3, -4.0, FACE.n, "work", 6, 12, 12),
-  ST(-8.0, -4.0, FACE.n, "work", 5, 10, 11), ST(-13.0, -8.4, FACE.s, "work", 5, 10, 0), ST(-8.0, -8.5, FACE.s, "work", 5, 10, 2),
+  ST(-10.3, -4.0, FACE.n, "work", 6, 12, 12), ST(-8.0, -4.0, FACE.n, "work", 5, 10, 11),
+];
+const PACK_ST = [
+  ST(1.4, -4.3, FACE.s, "work", 8, 16, 9), ST(-1.0, -7.2, FACE.s, "work", 8, 18, 6),
+  ST(-13.0, -8.4, FACE.s, "work", 5, 10, 0), ST(-8.0, -8.5, FACE.s, "work", 5, 10, 2),
 ];
 const G_RECEP = makeGraph(
   [[-5.2, 6.6], [-5.2, 4.0], [-6.6, 2.6], [-4.2, 2.6], [-1.6, 2.6], [1.0, 2.2], [-9.6, 0.2], [-8.4, 0.3], [-6.4, 0.2], [-4.4, 0.3], [-2.6, 0.2], [-2.6, 2.6], [-11.2, 1.3], [-9.2, 2.6], [-1.6, -1.2]],
@@ -2948,9 +2984,11 @@ function spawnPeople() {
   PED_GRAPH = buildSidewalkGraph();
   const S = SKINS;
   // 1. Reception staff
-  addPerson({ ...U.reception, x: -8.4, z: 0.3, rotY: 0, anim: "sit" }).job = stationJob(G_RECEP, RECEP_STAFF_ST);
-  addPerson({ ...U.receptionM, x: -4.4, z: 0.3, rotY: 0, anim: "sit", skin: S[1] }).job = stationJob(G_RECEP, RECEP_STAFF_ST);
-  addPerson({ ...U.washer, x: -11.2, z: 1.3, rotY: 0, anim: "work", skin: S[3] }).job = stationJob(G_RECEP, [RECEP_STAFF_ST[2], RECEP_STAFF_ST[3], ST(-9.2, 2.6, FACE.s, "work", 5, 10, 13)]);
+  // Operators (receptionist role): create orders and customers at the desk, hand orders out
+  addPerson({ ...U.operator, x: -8.4, z: 0.3, rotY: 0, anim: "sit" }).job = stationJob(G_RECEP, RECEP_STAFF_ST);
+  addPerson({ ...U.operatorM, x: -4.4, z: 0.3, rotY: 0, anim: "sit", skin: S[1] }).job = stationJob(G_RECEP, RECEP_STAFF_ST);
+  // Packer at the intake rack: takes walk-in carpets, tags them, hands self-pickup orders out
+  addPerson({ ...U.packer, x: -11.2, z: 1.3, rotY: 0, anim: "work", skin: S[3] }).job = stationJob(G_RECEP, [RECEP_STAFF_ST[2], RECEP_STAFF_ST[3], ST(-9.2, 2.6, FACE.s, "work", 5, 10, 13)]);
   // Reception customers: walk in with a carpet, hand it over at the counter, sit a while, leave
   const counterVisits = [
     Object.assign(ST(-6.6, 2.6, FACE.s, "talk", 5, 9, 2), { onDone: (q) => { if (q.carry) { q.carry.visible = false; q.carry = null; } } }),
@@ -2967,23 +3005,27 @@ function spawnPeople() {
     };
     c.tasks.push(T.anim("idle", i * 12));
   }
-  // 2. Workshop crew
-  for (let i = 0; i < 7; i++) {
-    const st = SHOP_ST[i];
+  // 2. Workshop crew: washers on the wet side, packers on the dry side
+  WASH_ST.slice(0, 5).forEach((st, i) => {
     const w = addPerson({ ...U.washer, x: st.x, z: st.z, rotY: st.yaw, anim: "work", skin: S[i % 4] });
-    w.job = stationJob(G_SHOP, SHOP_ST);
+    w.job = stationJob(G_SHOP, WASH_ST);
     st.busy = w; w.lastStation = st;
     w.tasks.push(T.anim("work", 4 + i * 2));
-  }
-  // 3. IT
-  addPerson({ ...U.it, x: -17.6, z: -4.15, rotY: FACE.s, anim: "sit" }).job = stationJob(G_IT, IT_ST);
-  addPerson({ ...U.it, recolor: { Purple: BRANDC.charcoal, LightBlue: BRANDC.navy }, x: -19.8, z: -8.0, rotY: FACE.s, anim: "work", skin: S[3] }).job = stationJob(G_IT, IT_ST);
-  // 4. Management
-  addPerson({ ...U.manager, x: -34.0, z: -8.9, rotY: FACE.n, anim: "sit", skin: S[1] }).job = stationJob(G_MGMT, MGMT_ST);
-  addPerson({ ...U.managerW, x: -25.2, z: -6.5, rotY: FACE.w, anim: "talk" }).job = stationJob(G_MGMT, MGMT_ST);
-  addPerson({ ...U.manager, recolor: { Suit: BRANDC.navy }, x: -28.6, z: -9.0, rotY: FACE.s, anim: "talk", skin: S[2] }).job = stationJob(G_MGMT, MGMT_ST);
-  // 5. Partner point
-  addPerson({ ...U.reception, recolor: { White: BRANDC.navy, Orange: BRANDC.charcoal, Hair_Blond: 0x1a1a1a }, x: -34.5, z: 1.55, rotY: FACE.n, anim: "sit", skin: S[3] }).job = stationJob(G_PART, PART_STAFF_ST);
+  });
+  PACK_ST.slice(0, 3).forEach((st, i) => {
+    const w = addPerson({ ...U.packer, x: st.x, z: st.z, rotY: st.yaw, anim: "work", skin: S[(i + 2) % 4] });
+    w.job = stationJob(G_SHOP, PACK_ST);
+    st.busy = w; w.lastStation = st;
+    w.tasks.push(T.anim("work", 3 + i * 2));
+  });
+  // 3. Integrations room: a manager checks the connected services and reports
+  addPerson({ ...U.managerW, recolor: { LimeGreen: BRANDC.charcoal, Gold: BRANDC.green }, x: -17.6, z: -4.15, rotY: FACE.s, anim: "sit", skin: S[3] }).job = stationJob(G_IT, IT_ST);
+  // 4. Management: the owner at the three-monitor desk, two managers at the meeting table
+  addPerson({ ...U.owner, x: -34.0, z: -8.9, rotY: FACE.n, anim: "sit", skin: S[1] }).job = stationJob(G_MGMT, [MGMT_ST[0], MGMT_ST[6], MGMT_ST[4]]);
+  addPerson({ ...U.managerW, x: -25.2, z: -6.5, rotY: FACE.w, anim: "talk" }).job = stationJob(G_MGMT, MGMT_ST.slice(1));
+  addPerson({ ...U.manager, recolor: { Suit: BRANDC.navy }, x: -28.6, z: -9.0, rotY: FACE.s, anim: "talk", skin: S[2] }).job = stationJob(G_MGMT, MGMT_ST.slice(1));
+  // 5. Partner point: an operator runs the kiosk
+  addPerson({ ...U.operator, recolor: { White: BRANDC.navy, Orange: BRANDC.charcoal, Hair_Blond: 0x1a1a1a }, x: -34.5, z: 1.55, rotY: FACE.n, anim: "sit", skin: S[3] }).job = stationJob(G_PART, PART_STAFF_ST);
   const partnerVisits = [ST(-28.5, 2.9, FACE.s, "work", 4, 7, 3), ST(-31.5, -1.3, FACE.s, "work", 4, 7, 4), ST(-26.6, -0.8, FACE.s, "work", 3, 6, 5), ST(-34.5, 3.4, FACE.s, "talk", 4, 8, 6)];
   for (let i = 0; i < 2; i++) {
     const c = addPerson({ ...casualLook(), x: -30, z: 6.6, hidden: true });
@@ -2991,17 +3033,16 @@ function spawnPeople() {
     c.tasks.push(T.anim("idle", 6 + i * 15));
   }
   addPerson({ ...U.driver, x: -33.0, z: 7.1, rotY: Math.PI, anim: "work", y: 0.09 }).job = stationJob(makeGraph([[-33.0, 7.1], [-36.5, 7.1], [-30.5, 7.3]], [[0, 1], [0, 2]]), [ST(-33.0, 7.1, FACE.s, "work", 6, 12, 0), ST(-36.5, 7.1, FACE.s, "work", 5, 10, 1), ST(-30.5, 7.3, FACE.n, "talk", 4, 8, 2)]);
-  // 6. Dispatch
-  addPerson({ ...U.dispatcher, x: -18.4, z: 0.2, rotY: FACE.w, anim: "sit" }).job = stationJob(G_DISP, DISP_ST);
-  addPerson({ ...U.dispatcher, recolor: { White: BRANDC.navy, Orange: BRANDC.charcoal }, x: -18.4, z: 2.4, rotY: FACE.w, anim: "sit", skin: S[1] }).job = stationJob(G_DISP, DISP_ST);
-  // Service yard
+  // 6. Dispatch: operators send pickup drivers out from the board (requireDispatchRole includes receptionist)
+  addPerson({ ...U.operator, recolor: { White: BRANDC.navy, Orange: BRANDC.charcoal, Hair_Blond: 0x2b1d14 }, x: -18.4, z: 0.2, rotY: FACE.w, anim: "sit" }).job = stationJob(G_DISP, DISP_ST);
+  addPerson({ ...U.operatorM, x: -18.4, z: 2.4, rotY: FACE.w, anim: "sit", skin: S[1] }).job = stationJob(G_DISP, DISP_ST);
+  // Service yard: packers receive bags from the drivers and hand clean orders back (no guard — not a CRM role)
   for (let i = 0; i < 2; i++) {
     const st = LOADER_ST[i];
-    const l = addPerson({ ...U.loader, x: st.x, z: st.z, rotY: st.yaw, anim: "idle", y: 0.09, skin: S[(i + 1) % 4] });
+    const l = addPerson({ ...U.packer, x: st.x, z: st.z, rotY: st.yaw, anim: "work", y: 0.09, skin: S[(i + 1) % 4] });
     l.isLoader = true;
     l.job = stationJob(G_YARD, LOADER_ST);
   }
-  addPerson({ ...U.guard, x: -22.4, z: -17.6, rotY: 0, anim: "idle", y: 0.09, skin: S[2] }).job = stationJob(G_YARD, GUARD_ST);
   // Pedestrians on the sidewalk network
   for (let i = 0; i < 18; i++) {
     const n = PED_GRAPH.nodes[Math.floor(Math.random() * PED_GRAPH.nodes.length)];
