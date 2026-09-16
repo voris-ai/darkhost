@@ -1,177 +1,134 @@
 // ─── DARKHOST 3D SHOWROOM (Enterprise + 40-House Neighborhood + Smooth Moving Car) ───
 
 // Data for the 6 enterprise zones
+// Six zones — one per CRM role (staff_users.role): receptionist («оператор»), washer, packer, driver, manager, owner.
+// Text follows what each role can actually do in the product (role gates in api/internal/*).
 const ZONES_DATA = [
   {
-    id: "reception",
-    category: "reception",
-    title: "Приёмный пункт",
-    subtitle: "Дархост CRM · Заказы, клиенты и выдача",
+    id: "operator",
+    category: "operator",
+    title: "Оператор",
+    subtitle: "Приёмный пункт и диспетчерская · роль receptionist",
     description:
-      "Оператор оформляет заказ на стойке: клиент приносит вещи сам или курьер забирает по адресу. Цена считается по прайс-листу, клиент получает SMS на каждом этапе, готовый заказ выдаётся здесь же или доставляется водителем.",
+      "Оператор оформляет заказ на стойке: заводит клиента, выбирает «Курьер заберёт» или «Клиент принесёт сам», ставит дату выдачи. С доски цеха отправляет водителя на забор и выдаёт готовые заказы. Цены, состав заказа и наличные при выдаче — только менеджер или владелец.",
     crmHref: "../web",
     crmActionLabel: "Открыть заказы",
     features: [
-      "Новый заказ: ковры, шторы, подушки, пледы и одежда",
-      "Приём вещей: «Курьер заберёт» или «Клиент принесёт сам»",
-      "Скидка по запросу — подтверждает владелец",
-      "Выдача готовых заказов с пересчётом мест и оплатой",
+      "Новый заказ и карточка клиента, заявка на скидку владельцу",
+      "Курьер или самовывоз, перенос даты выдачи",
+      "Доска цеха: отправить водителя на забор",
+      "Выдача готового заказа (без записи наличных)",
     ],
-    connectedModules: [
-      "Заказы",
-      "Новый заказ",
-      "Клиенты",
-      "Прайс-лист",
-      "Выдача",
-      "Запросы на скидку",
-      "SMS клиентам",
-    ],
-    cameraTarget: new THREE.Vector3(-5, 1.2, 1.5),
-    cameraPosition: new THREE.Vector3(-5 + 9, 7.5, 1.5 + 9),
-    hotspotPosition: new THREE.Vector3(-5, 4.3, 1.5),
-    badgeText: "Приёмный пункт",
+    connectedModules: ["Заказы", "Новый заказ", "Клиенты", "Доска цеха", "Выдача", "Календарь", "SMS клиентам"],
+    cameraTarget: new THREE.Vector3(-6.4, 1.25, 1.4),
+    cameraPosition: new THREE.Vector3(-2.8, 2.5, 5.5),
+    hotspotPosition: new THREE.Vector3(-6.4, 4.3, 1.4),
+    badgeText: "Оператор",
   },
   {
-    id: "workshop",
-    category: "workshop",
-    title: "Цех",
-    subtitle: "Дархост CRM · Партии, стадии и контроль качества",
+    id: "washer",
+    category: "washer",
+    title: "Мойщик",
+    subtitle: "Мокрая зона цеха · роль washer",
     description:
-      "Партия принимается по биркам вида AA001-1, каждое изделие проходит стадии: приёмка, стирка, сушка, проверка качества, упаковка. Мойщики и упаковщики отмечают стадии в полевом приложении, менеджер видит всё на мониторинге.",
+      "Мойщик видит одну доску: вещи, которые ждут мойки. На каждой — две кнопки: «В мойку» (приёмка → мойка) и «Мойка закончена» (мойка → сушка). Больше мойщику ничего не показывается — ни заказов, ни цен.",
     crmHref: "../web",
-    crmActionLabel: "Открыть мониторинг цеха",
+    crmActionLabel: "Открыть доску мойки",
     features: [
-      "Приём партии по биркам, безымянные изделия — в разбор",
-      "Стадии: стирка → сушка (в т.ч. на улице) → проверка качества → упаковка",
-      "Повреждение фиксируется с фото, претензии о порче — отдельный раздел",
-      "Переделка и возврат на перестирку без потери истории",
+      "Доска мойки: все вещи всех заказов одним списком",
+      "«В мойку» → стадия Мойка, «Мойка закончена» → Сушка",
+      "Линия мойки, центрифуга, отжим, стиральные машины, сушка",
+      "Вход в приложение по SMS-коду",
     ],
-    connectedModules: [
-      "Мониторинг",
-      "Приём партии",
-      "Безымянные изделия",
-      "Претензии о порче",
-      "Ожидают подтверждения",
-      "Касса цеха",
-      "Приложение мойщика и упаковщика",
-    ],
-    cameraTarget: new THREE.Vector3(-5, 1.4, -6),
-    cameraPosition: new THREE.Vector3(-5 + 10, 8.5, -6 + 10),
-    hotspotPosition: new THREE.Vector3(-5, 4.4, -6),
-    badgeText: "Цех",
+    connectedModules: ["Приложение мойщика", "Стадии: Ожидает мойки · В мойке · На сушке", "Мониторинг цеха"],
+    cameraTarget: new THREE.Vector3(-8.5, 1.3, -6.5),
+    cameraPosition: new THREE.Vector3(-5.2, 3.4, -2.6),
+    hotspotPosition: new THREE.Vector3(-8.5, 4.4, -6.5),
+    badgeText: "Мойщик",
   },
   {
-    id: "logistics",
-    category: "logistics",
-    title: "Дом и выезды",
-    subtitle: "Дархост CRM · Маршруты и полевое приложение водителя",
+    id: "packer",
+    category: "packer",
+    title: "Упаковщик",
+    subtitle: "Приёмка, замер и упаковка · роль packer",
     description:
-      "Менеджер собирает маршруты на день, водитель начинает смену в приложении и едет по точкам: забирает вещи у клиента, пересчитывает места, привозит в цех, а готовые заказы доставляет обратно и принимает оплату.",
+      "Упаковщик принимает мешок от водителя и делит его на вещи с бирками, замеряет ковры (при превышении порога заказ уходит клиенту на согласование), после сушки принимает вещи на упаковку и отмечает «Упаковано». Он же выдаёт самовывоз и возвращает брак в мойку.",
+    crmHref: "../web",
+    crmActionLabel: "Открыть доску упаковки",
+    features: [
+      "Разделение мешка на вещи, замер и согласование с клиентом",
+      "«Принять на упаковку» → «Упаковано» (с фото «после»)",
+      "Возврат в мойку, «вещи нет», безымянные изделия",
+      "Выдача самовывоза и передача курьеру",
+    ],
+    connectedModules: ["Приложение упаковщика", "Приём партии", "Безымянные изделия", "Претензии о порче", "Ожидают подтверждения", "Выдача"],
+    cameraTarget: new THREE.Vector3(0.6, 1.2, -6.0),
+    cameraPosition: new THREE.Vector3(3.4, 3.4, -2.4),
+    hotspotPosition: new THREE.Vector3(0.6, 4.4, -6.0),
+    badgeText: "Упаковщик",
+  },
+  {
+    id: "driver",
+    category: "driver",
+    title: "Водитель",
+    subtitle: "Комната водителей, доки и маршруты · роль driver",
+    description:
+      "Водитель начинает смену в приложении и едет по точкам маршрута: у двери клиента создаёт мешок и добавляет вещи, привозит их в цех, готовые заказы доставляет обратно с фото подписи и принимает наличные. В конце смены сдаёт кассу менеджеру.",
     crmHref: "../web",
     crmActionLabel: "Открыть маршруты",
     features: [
-      "Маршрут на день: получение и доставка по адресам",
-      "Смена водителя: «Начать смену» → маршрут → «Завершение смены»",
-      "Вещи, добавленные водителем у двери, оцениваются в цеху",
-      "Статусы заказа: На маршруте → Забран → В цеху → В пути → Доставлен",
+      "Смена: «Начать смену» → маршрут → «Завершение смены»",
+      "Мешок и вещи у двери клиента, «клиента нет дома»",
+      "Статусы: На маршруте → Забран → В цеху → В пути → Доставлен",
+      "Наличные на заборе и доставке, сверка с менеджером",
     ],
-    connectedModules: [
-      "Маршруты",
-      "Календарь",
-      "Приложение водителя",
-      "Заказы",
-      "SMS клиентам",
-    ],
-    cameraTarget: new THREE.Vector3(44, 1.0, -4.0),
-    cameraPosition: new THREE.Vector3(44 + 22, 16, -4.0 + 22),
-    hotspotPosition: new THREE.Vector3(44, 7.5, 0.0),
-    badgeText: "Дом и выезды",
+    connectedModules: ["Приложение водителя", "Маршруты", "Заявки", "Доставка", "В машине", "История смен"],
+    cameraTarget: new THREE.Vector3(-18, 1.3, -6.5),
+    cameraPosition: new THREE.Vector3(-18 + 5.5, 5.5, -6.5 + 6.5),
+    hotspotPosition: new THREE.Vector3(-18, 4.4, -6.5),
+    badgeText: "Водитель",
   },
   {
-    id: "management",
-    category: "management",
-    title: "Управление и отчёты",
-    subtitle: "Дархост CRM · Кабинет владельца и менеджера",
+    id: "manager",
+    category: "manager",
+    title: "Менеджер",
+    subtitle: "Цены, маршруты, касса и люди · роль manager",
     description:
-      "Владелец видит выручку, кассу, расходы и очередь заказов, сверяет наличные, ведёт табель и зарплату сотрудников. Каждое действие в системе попадает в журнал событий.",
+      "Менеджер оценивает вещи и ставит цены, собирает маршруты на день и назначает водителей, сверяет кассу с водителями, решает претензии и безымянные изделия, ведёт табель и зарплату. Видит все отчёты, кроме владельческих.",
+    crmHref: "../web",
+    crmActionLabel: "Открыть мониторинг",
+    features: [
+      "Очередь оценки и прайс-лист, изменение состава заказа",
+      "Маршруты: планирование, назначение водителя, оптимизация",
+      "Касса: сверка с водителями, недобор наличных, расходы",
+      "Табель, зарплата, сброс PIN сотрудников",
+    ],
+    connectedModules: ["Мониторинг", "Очередь оценки", "Прайс-лист", "Маршруты", "Сверка кассы", "Табель", "Зарплата", "Отчёты"],
+    cameraTarget: new THREE.Vector3(-30.5, 1.3, -6.5),
+    cameraPosition: new THREE.Vector3(-27.0, 2.8, -3.5),
+    hotspotPosition: new THREE.Vector3(-30.5, 4.4, -6.5),
+    badgeText: "Менеджер",
+  },
+  {
+    id: "owner",
+    category: "owner",
+    title: "Владелец",
+    subtitle: "Кабинет владельца · роль owner",
+    description:
+      "Владелец видит выручку и журнал событий, утверждает скидки, управляет сотрудниками и их правами по разделам, расходами, SMS-рассылками, тарифом и настройками компании. Всё, что доступно менеджеру, доступно и владельцу.",
     crmHref: "../web",
     crmActionLabel: "Открыть отчёты",
     features: [
-      "Отчёты: выручка, изделия, возвраты, очередь заказов, расходы",
-      "Касса и недобор наличных, касса цеха и статьи расходов",
-      "Табель посещаемости и зарплата по ролям",
-      "Сотрудники, роли, сброс PIN и журнал событий",
+      "Выручка, изделия, возвраты, аудит-журнал",
+      "Сотрудники и права по разделам, тариф, настройки",
+      "Утверждение скидок, расходы, наличные",
+      "SMS-рассылки и ассистент по отчётам",
     ],
-    connectedModules: [
-      "Главная",
-      "Касса",
-      "Недобор наличных",
-      "Расходы",
-      "Табель",
-      "Зарплата",
-      "Сотрудники",
-      "Журнал событий",
-      "Тариф",
-    ],
-    cameraTarget: new THREE.Vector3(-30, 1.4, -6.5),
-    cameraPosition: new THREE.Vector3(-30 + 9, 8, -6.5 + 9),
-    hotspotPosition: new THREE.Vector3(-30, 4.4, -6.5),
-    badgeText: "Управление",
-  },
-  {
-    id: "partner",
-    category: "partner",
-    title: "Выдача и самовывоз",
-    subtitle: "Дархост CRM · Готовые заказы для клиентов",
-    description:
-      "Клиент, который принёс вещи сам, забирает их здесь: заказ находится по телефону или номеру, оператор сверяет количество мест, принимает оплату и закрывает заказ. После оплаты клиент может оставить отзыв.",
-    crmHref: "../web",
-    crmActionLabel: "Открыть выдачу",
-    features: [
-      "Самовывоз: поиск заказа по клиенту, пересчёт мест при выдаче",
-      "Оплата наличными или переводом на счёт компании",
-      "SMS о готовности заказа",
-      "Отзывы клиентов после оплаты",
-    ],
-    connectedModules: [
-      "Выдача",
-      "Заказы",
-      "Клиенты",
-      "Отзывы",
-      "Обращения",
-    ],
-    cameraTarget: new THREE.Vector3(-30, 1.2, 1.5),
-    cameraPosition: new THREE.Vector3(-30 + 9, 7.5, 1.5 + 9),
-    hotspotPosition: new THREE.Vector3(-30, 4.3, 1.5),
-    badgeText: "Выдача",
-  },
-  {
-    id: "integrations",
-    category: "integrations",
-    title: "SMS, приложение и ассистент",
-    subtitle: "Дархост CRM · Связь с клиентами и внешние сервисы",
-    description:
-      "Клиенты получают SMS на каждом этапе и заказывают через мобильное приложение, где видно, где их вещи. Сотрудники входят по SMS-коду, а ассистент отвечает на вопросы по отчётам прямо в CRM.",
-    crmHref: "../web",
-    crmActionLabel: "Открыть SMS и рассылки",
-    features: [
-      "SMS клиентам на русском или таджикском",
-      "Клиентское приложение: заявка, отслеживание заказа, история",
-      "Рассылки и обращения клиентов",
-      "Ассистент по отчётам и открытый API",
-    ],
-    connectedModules: [
-      "SMS клиентам",
-      "Рассылки",
-      "Обращения",
-      "Ассистент",
-      "Клиентское приложение",
-      "API",
-    ],
-    cameraTarget: new THREE.Vector3(-18, 1.6, -6.5),
-    cameraPosition: new THREE.Vector3(-18 + 8, 7.5, -6.5 + 8),
-    hotspotPosition: new THREE.Vector3(-18, 4.4, -6.5),
-    badgeText: "SMS и ассистент",
+    connectedModules: ["Выручка", "Сотрудники", "Запросы на скидку", "Расходы", "Рассылки", "Журнал событий", "Тариф", "Настройки"],
+    cameraTarget: new THREE.Vector3(-30.0, 1.25, 1.0),
+    cameraPosition: new THREE.Vector3(-26.4, 2.6, 5.4),
+    hotspotPosition: new THREE.Vector3(-30.0, 4.3, 1.0),
+    badgeText: "Владелец",
   },
 ];
 
@@ -263,11 +220,16 @@ container.appendChild(renderer.domElement);
 const controls = new THREE.OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.05;
-controls.maxPolarAngle = Math.PI; // full vertical flip, can look from underneath
-controls.minPolarAngle = 0; // straight top-down view allowed
-controls.minDistance = 6;
-controls.maxDistance = 260;
+controls.maxPolarAngle = Math.PI / 2.05; // stays above floor, no underground glitch
+controls.minPolarAngle = 0.05; // top-down view allowed
+controls.minDistance = 1.2; // can zoom right into desks, monitors, characters
+controls.maxDistance = 220;
 controls.target.copy(OVERVIEW_CAMERA.target);
+
+// Cancel camera lerping as soon as user starts interacting manually
+controls.addEventListener("start", () => {
+  isAnimatingCamera = false;
+});
 
 // ─── WARM STUDIO LIGHTING ───────────────────────────────────────────────────
 const ambientLight = new THREE.AmbientLight(0xffedd5, 0.5);
@@ -681,20 +643,24 @@ wallZDoor(-14, -2, CAMPUS.zFront, 0.6, 2.0);
 // x = -22: dispatch|partner (front) and IT|management (back)
 wallZDoor(-22, CAMPUS.zBack, -3, -7.5, -6.1);
 wallZDoor(-22, -3, CAMPUS.zFront, 0.6, 2.0);
-// z = -2: reception|workshop with a wide pass-through for the garment/carpet conveyor
-wallXDoor(-2, -14, CAMPUS.x1, -8.5, -5.5);
+// z = -2: reception|washers pass-through (carpet conveyor) and a door reception|packers (hand-out)
+wallXDoor(-2, -14, -1.0, -8.5, -5.5);
+wallXDoor(-2, -1.0, CAMPUS.x1, 1.0, 2.5);
+// x = -2.5: washers|packers partition with a wide opening at the back (dock traffic)
+wallZDoor(-2.5, CAMPUS.zBack, -2, -9.6, -6.4);
 // z = -3: IT room glass front and management|partner wall
 worldGroup.add(createBox(8 - 1.4, 2.9, 0.08, M.glass, { x: cx(-22, -14) - 0.7, y: 1.45, z: -3 }, false));
 worldGroup.add(createBox(0.1, 2.9, 0.12, M.graphite, { x: -14.7, y: 1.45, z: -3 }, false));
 wallXDoor(-3, CAMPUS.x0, -22, -27, -25.6);
 
 // Zone name plates above each doorway (inside)
-label3d("ПРИЁМНЫЙ ПУНКТ", 4.2, 0.55, { x: -5, y: 2.75, z: CAMPUS.zFront - 0.14 }, Math.PI);
-label3d("ВЫДАЧА · САМОВЫВОЗ", 4.4, 0.55, { x: -30, y: 2.75, z: CAMPUS.zFront - 0.14 }, Math.PI);
-label3d("ЦЕХ", 2.0, 0.55, { x: -7, y: 2.72, z: -2 - 0.12 }, Math.PI);
-label3d("SMS · АССИСТЕНТ · API", 3.6, 0.5, { x: -18.7, y: 3.15, z: -3 - 0.1 }, Math.PI);
-label3d("УПРАВЛЕНИЕ", 3.2, 0.55, { x: -26.3, y: 2.75, z: -3 - 0.12 }, Math.PI);
-label3d("МАРШРУТЫ · ДИСПЕТЧЕРСКАЯ", 4.6, 0.5, { x: -18, y: 2.75, z: -3 + 0.12 }, 0);
+label3d("ОПЕРАТОР · ПРИЁМ ЗАКАЗОВ", 4.6, 0.55, { x: -5, y: 2.75, z: CAMPUS.zFront - 0.14 }, Math.PI);
+label3d("ВЛАДЕЛЕЦ", 3.0, 0.55, { x: -30, y: 2.75, z: CAMPUS.zFront - 0.14 }, Math.PI);
+label3d("МОЙЩИК", 2.4, 0.55, { x: -7, y: 2.72, z: -2 - 0.12 }, Math.PI);
+label3d("УПАКОВЩИК", 2.8, 0.55, { x: 1.75, y: 2.72, z: -2 - 0.12 }, Math.PI);
+label3d("ВОДИТЕЛЬ · СМЕНА", 3.6, 0.5, { x: -18.7, y: 3.15, z: -3 - 0.1 }, Math.PI);
+label3d("МЕНЕДЖЕР", 3.0, 0.55, { x: -26.3, y: 2.75, z: -3 - 0.12 }, Math.PI);
+label3d("ОПЕРАТОР · МАРШРУТЫ", 4.2, 0.5, { x: -18, y: 2.75, z: -3 + 0.12 }, 0);
 
 // ── Interior: procedural fixtures now, poly.pizza furniture once the models load (buildInterior) ──
 const FLOOR_Y = 0.11;
@@ -848,36 +814,55 @@ buildCarpetWasher(-10.8, -5.4);
 machinePlate("МОЙКА КОВРОВ", 3.0, -10.8, -5.4);
 buildCentrifuge(-6.3, -5.6);
 machinePlate("ЦЕНТРИФУГА", 2.6, -6.3, -5.6);
-buildWringer(-3.3, -5.6);
-machinePlate("ОТЖИМ · ПРЕСС", 2.8, -3.3, -5.6);
+buildWringer(-8.0, -9.0);
+machinePlate("ОТЖИМ · ПРЕСС", 2.8, -8.0, -9.0);
 [-13.2, -11.6, -10.0, -8.4].forEach((rx, i) => buildDryRack(rx + 0.7, -3.0, [M.carpetA, M.carpetB, M.carpetC, M.carpetClean][i]));
 buildFloorFan(-6.6, -3.2, Math.PI / 2);
 machinePlate("СУШКА", 2.0, -10.8, -3.0, 3.0);
 // Packing counter by the dispatch window
-worldGroup.add(createBox(3.0, 0.95, 1.1, M.counterWhite, { x: 1.2, y: 0.48, z: -3.0 }));
-worldGroup.add(createBox(2.8, 0.08, 0.95, new THREE.MeshStandardMaterial({ color: 0xf59e0b }), { x: 1.2, y: 0.99, z: -3.0 }));
-worldGroup.add(createBox(2.6, 0.12, 0.3, M.washerTeal, { x: 1.2, y: 2.2, z: -3.0 }));
-// Three industrial washers along the east wall (procedural: round glass door + control panel)
-[-8.2, -6.4, -4.6].forEach((z) => worldGroup.add(buildHeavyDutyWasher(3.2, z, M.washerTeal, -Math.PI / 2)));
-machinePlate("СТИРАЛЬНЫЕ МАШИНЫ", 3.4, 2.85, -6.4, 2.65, -Math.PI / 2);
+worldGroup.add(createBox(3.0, 0.95, 1.1, M.counterWhite, { x: -0.8, y: 0.48, z: -3.0 }));
+worldGroup.add(createBox(2.8, 0.08, 0.95, new THREE.MeshStandardMaterial({ color: 0xf59e0b }), { x: -0.8, y: 0.99, z: -3.0 }));
+// Two industrial washers along the west wall (procedural: round glass door + control panel)
+[-7.6, -9.1].forEach((z) => worldGroup.add(buildHeavyDutyWasher(-13.2, z, M.washerTeal, Math.PI / 2)));
+machinePlate("СТИРАЛЬНЫЕ МАШИНЫ", 3.4, -12.85, -8.35, 2.65, Math.PI / 2);
+// Packers' side: wrapping station (film roll on a stand) and name plates
+{
+  const g = new THREE.Group();
+  g.add(createBox(0.5, 0.06, 0.5, M.graphite, { x: 0, y: 0.03, z: 0 }));
+  g.add(createCylinder(0.04, 0.04, 1.3, 8, M.metalSilver, { x: 0, y: 0.65, z: 0 }, false));
+  const film = createCylinder(0.2, 0.2, 1.1, 14, M.glassCyan, { x: 0, y: 1.0, z: 0 }, false);
+  film.rotation.z = Math.PI / 2;
+  g.add(film);
+  g.position.set(-1.6, 0.1, -4.6);
+  worldGroup.add(g);
+}
+machinePlate("ПРИЁМКА · ЗАМЕР", 3.2, -0.5, -8.4);
+machinePlate("УПАКОВКА", 2.4, -0.8, -3.0);
 label3d("УПАКОВКА · КОНТРОЛЬ", 3.2, 0.4, { x: -1.0, y: 1.7, z: -9.7 }, 0, { bg: "#52B369" });
 
-// ── 3. ИНТЕГРАЦИИ · IT (x -22..-14, z -10..-3): racks + integration module wall ──
-[-21.0, -19.8, -18.6].forEach((rx) => {
-  worldGroup.add(createBox(0.95, 2.2, 0.85, M.graphite, { x: rx, y: 1.1, z: -9.2 }));
-  worldGroup.add(createBox(0.88, 2.1, 0.04, M.glass, { x: rx, y: 1.1, z: -8.76 }));
-  for (let sy = 0.4; sy <= 1.9; sy += 0.25) {
-    worldGroup.add(createBox(0.06, 0.04, 0.04, Math.round(sy * 4) % 2 ? M.screenGlow : M.brandGreen, { x: rx + 0.3, y: sy, z: -8.74 }, false));
-  }
-});
-worldGroup.add(createBox(0.08, 2.2, 6.4, M.brandNavy, { x: -14.2, y: 1.9, z: -6.5 }));
-worldGroup.add(createBox(0.06, 2.0, 6.2, M.boardWhite, { x: -14.25, y: 1.9, z: -6.5 }));
-const intModules = [0x0284c7, 0x16a34a, 0xd32f2f, 0xf59e0b, 0x8b5cf6, 0x0f766e, 0x0369a1, 0x15803d];
-for (let r = 0; r < 2; r++) {
-  for (let c = 0; c < 4; c++) {
-    worldGroup.add(createBox(0.08, 0.72, 1.3, new THREE.MeshStandardMaterial({ color: intModules[r * 4 + c], roughness: 0.3 }), { x: -14.3, y: 2.25 - r * 0.9, z: -9.0 + c * 1.6 }));
-  }
-}
+// ── 3. ВОДИТЕЛИ (x -22..-14, z -10..-3): route board, staff lockers, key board, cash safe ──
+worldGroup.add(createBox(0.08, 2.0, 5.0, M.graphite, { x: -21.8, y: 1.85, z: -6.5 }));
+worldGroup.add(createBox(0.06, 1.8, 4.8, M.screenGlow, { x: -21.75, y: 1.85, z: -6.5 }, false));
+for (let i = 0; i < 5; i++) worldGroup.add(createBox(0.05, 0.05, 4.4, M.counterWhite, { x: -21.7, y: 1.2 + i * 0.32, z: -6.5 }, false));
+[[-8.4, 0x52b369], [-7.2, 0xf59e0b], [-6.0, 0x52b369], [-4.8, 0xd32f2f]].forEach(([z, c]) => worldGroup.add(createBox(0.05, 0.22, 0.9, new THREE.MeshStandardMaterial({ color: c }), { x: -21.68, y: 2.45, z }, false)));
+label3d("МАРШРУТЫ НА СЕГОДНЯ · СМЕНЫ", 3.8, 0.36, { x: -21.66, y: 3.05, z: -6.5 }, Math.PI / 2, { bg: "#033D53" });
+const lockerWall = (x, z, w, rotY) => {
+  const g = new THREE.Group();
+  g.add(createBox(w, 2.5, 0.75, M.postomatGrey, { x: 0, y: 1.25, z: 0 }));
+  g.add(createBox(w - 0.2, 2.3, 0.04, M.counterWhite, { x: 0, y: 1.25, z: 0.39 }));
+  g.add(createBox(w, 0.28, 0.78, M.brandNavy, { x: 0, y: 2.64, z: 0 }, false));
+  for (let lx = -w / 2 + 0.7; lx < w / 2 - 0.4; lx += 0.7) g.add(createBox(0.02, 2.2, 0.06, M.graphite, { x: lx, y: 1.25, z: 0.4 }, false));
+  for (let ly = 0.45; ly <= 2.2; ly += 0.45) g.add(createBox(w - 0.4, 0.02, 0.06, M.graphite, { x: 0, y: ly, z: 0.4 }, false));
+  g.position.set(x, 0, z);
+  g.rotation.y = rotY;
+  worldGroup.add(g);
+};
+lockerWall(-17.0, -9.55, 5.6, 0); // staff lockers along the back wall
+worldGroup.add(createBox(1.0, 0.8, 0.06, M.brandNavy, { x: -14.3, y: 1.7, z: -8.0 }, false)); // key board
+for (let r = 0; r < 3; r++) for (let c = 0; c < 4; c++) worldGroup.add(createBox(0.06, 0.12, 0.06, M.metalSilver, { x: -14.36, y: 1.95 - r * 0.25, z: -8.36 + c * 0.24 }, false));
+worldGroup.add(createBox(0.7, 0.9, 0.6, M.graphite, { x: -14.5, y: 0.55, z: -4.0 })); // cash safe
+worldGroup.add(createBox(0.1, 0.1, 0.1, M.metalSilver, { x: -14.85, y: 0.7, z: -4.0 }, false));
+label3d("КАССА СМЕНЫ", 1.2, 0.3, { x: -14.86, y: 1.35, z: -4.0 }, -Math.PI / 2, { bg: "#52B369", size: 0.6 });
 
 // ── 4. УПРАВЛЕНИЕ (x -38..-22, z -10..-3): KPI board ──
 worldGroup.add(createBox(6.0, 2.0, 0.08, M.boardWhite, { x: -30.0, y: 2.0, z: CAMPUS.zBack + 0.2 }));
@@ -886,25 +871,12 @@ worldGroup.add(createBox(6.0, 2.0, 0.08, M.boardWhite, { x: -30.0, y: 2.0, z: CA
 });
 label3d("ВЫРУЧКА · КАССА · ОТЗЫВЫ", 4.0, 0.36, { x: -30, y: 3.05, z: CAMPUS.zBack + 0.27 }, 0, { bg: "#033D53" });
 
-// ── 5. ВЫДАЧА · САМОВЫВОЗ (x -38..-22, z -3..5): parcel lockers, kiosk ──
-const lockerWall = (x, z, w, rotY) => {
-  const g = new THREE.Group();
-  g.add(createBox(w, 2.5, 0.75, M.postomatGrey, { x: 0, y: 1.25, z: 0 }));
-  g.add(createBox(w - 0.2, 2.3, 0.04, M.counterWhite, { x: 0, y: 1.25, z: 0.39 }));
-  g.add(createBox(w, 0.28, 0.78, M.brandNavy, { x: 0, y: 2.64, z: 0 }, false));
-  for (let lx = -w / 2 + 0.7; lx < w / 2 - 0.4; lx += 0.7) g.add(createBox(0.02, 2.2, 0.06, M.graphite, { x: lx, y: 1.25, z: 0.4 }, false));
-  for (let ly = 0.45; ly <= 2.2; ly += 0.45) g.add(createBox(w - 0.4, 0.02, 0.06, M.graphite, { x: 0, y: ly, z: 0.4 }, false));
-  g.add(createBox(0.85, 1.2, 0.06, M.screenGlow, { x: 0, y: 1.45, z: 0.42 }));
-  g.position.set(x, 0, z);
-  g.rotation.y = rotY;
-  worldGroup.add(g);
-};
-lockerWall(-33, -2.5, 7.0, 0);
-lockerWall(-24.2, 0.5, 5.0, Math.PI / 2);
-lockerWall(-34.5, 5.9, 6.0, 0);
-worldGroup.add(createBox(0.2, 1.0, 0.2, M.graphite, { x: -28.5, y: 0.5, z: 2.0 }));
-worldGroup.add(createBox(0.65, 0.85, 0.12, M.counterWhite, { x: -28.5, y: 1.3, z: 2.0 }));
-worldGroup.add(createBox(0.52, 0.68, 0.04, M.screenGlow, { x: -28.5, y: 1.32, z: 2.06 }, false));
+// ── 5. ВЛАДЕЛЕЦ (x -38..-22, z -3..5): revenue board on the back wall, lounge; furniture in buildInterior ──
+worldGroup.add(createBox(6.0, 2.0, 0.08, M.boardWhite, { x: -30.0, y: 2.0, z: -2.75 }));
+[[0x0284c7, 1.1], [0x16a34a, 1.5], [0x52b369, 1.75], [0xeab308, 1.3], [0xd32f2f, 0.8], [0x0f766e, 1.6]].forEach(([col, hh], i) => {
+  worldGroup.add(createBox(0.6, hh, 0.09, new THREE.MeshStandardMaterial({ color: col }), { x: -32.3 + i * 0.9, y: 1.1 + hh / 2, z: -2.69 }));
+});
+label3d("ВЫРУЧКА · РАСХОДЫ · ЗАРПЛАТА", 4.4, 0.36, { x: -30, y: 3.05, z: -2.68 }, 0, { bg: "#033D53" });
 
 // ── 6. МАРШРУТЫ · ДИСПЕТЧЕРСКАЯ (x -22..-14, z -3..5): GPS map wall ──
 worldGroup.add(createBox(0.08, 2.0, 5.6, M.graphite, { x: -21.8, y: 1.85, z: 1.0 }));
@@ -938,17 +910,19 @@ function buildInterior() {
   P("plant", -13.3, 4.3, 0.6);
   P("cooler", 3.4, -1.4, -Math.PI / 2);
   P("vending", 3.3, 0.5, -Math.PI / 2);
-  // 2. Workshop: industrial washers, storage shelves with boxes, packing table, carts
-  [-2.0, -0.45].forEach((x) => P("desk", x, -8.4, Math.PI, { h: 0.8 }));
-  [[-2.2, -8.5], [-1.4, -8.3], [-0.2, -8.5]].forEach(([x, z], i) => cardboardBox(x, z, FLOOR_Y + 0.8, 0.4, i * 0.4));
-  [-13.1, -8.0].forEach((x) => P("shelf", x, -9.55, 0));
-  [[-13.5, -9.5, 0.6], [-12.8, -9.5, 0.6], [-13.5, -9.5, 1.2], [-13.2, -9.5, 0.0], [-8.4, -9.5, 0.6], [-7.6, -9.5, 0.6], [-8.0, -9.5, 1.2], [-8.6, -9.5, 0.0]].forEach(([x, z, y], i) => cardboardBox(x, z, FLOOR_Y + y, 0.42, (i % 3) * 0.15));
-  addLaundryCart(-4.3, -9.3, 0.25);
-  // 3. IT: developer desk with monitors, chair, bookcase, plant
-  P("desk", -17.6, -5.0, 0);
-  [-18.0, -17.2].forEach((x) => P("screen", x, -5.25, 0, { y: FLOOR_Y + 0.76 }));
-  P("chair", -17.6, -4.15, Math.PI);
-  P("bookcase", -21.45, -4.3, Math.PI / 2);
+  // 2. Packers' side: intake desks with bags/boxes, shelves with packed orders, trolley
+  [-1.3, 0.2].forEach((x) => P("desk", x, -8.4, Math.PI, { h: 0.8 }));
+  [[-1.5, -8.5], [-0.7, -8.3], [0.4, -8.5]].forEach(([x, z], i) => cardboardBox(x, z, FLOOR_Y + 0.8, 0.4, i * 0.4));
+  [-8.4, -6.2].forEach((z) => P("shelf", 3.5, z, -Math.PI / 2));
+  [[3.5, -8.8, 0.6], [3.5, -8.0, 0.6], [3.5, -8.4, 1.2], [3.5, -6.6, 0.6], [3.5, -5.8, 0.6], [3.5, -6.2, 1.2], [3.5, -6.0, 0.0]].forEach(([x, z, y], i) => cardboardBox(x, z, FLOOR_Y + y, 0.42, (i % 3) * 0.15));
+  addLaundryCart(3.2, -4.4, 0);
+  // 3. Drivers' room: table with chairs for the shift briefing, cooler, plant
+  P("roundTable", -18.0, -6.0, 0, { h: 0.76 });
+  for (let i = 0; i < 4; i++) {
+    const a = (i / 4) * Math.PI * 2 + Math.PI / 4;
+    P("chair", -18.0 + Math.cos(a) * 1.5, -6.0 + Math.sin(a) * 1.5, Math.atan2(-Math.cos(a), -Math.sin(a)));
+  }
+  P("cooler", -15.0, -6.2, -Math.PI / 2);
   P("plant", -15.0, -3.7, 0);
   // 4. Management: owner desk (three monitors), cabinets, meeting table, cooler, plants
   P("desk", -34.0, -8.0, Math.PI);
@@ -964,12 +938,16 @@ function buildInterior() {
   P("cooler", -23.0, -3.8, Math.PI / 2);
   P("plant", -23.0, -9.4, 0);
   P("plant", -36.6, -3.6, 0);
-  // 5. Partner point: service counter, staff chair, waiting couch, parcel vending, plant
-  [-35.6, -33.4].forEach((x) => P("counter", x, 2.6, Math.PI));
-  P("chair", -34.5, 1.55, 0);
-  P("couch", -31.2, 4.2, Math.PI);
-  P("vending", -26.6, -1.9, 0);
+  // 5. Owner's office: big desk with three monitors, cabinets, lounge sofa, plants
+  P("desk", -30.0, -0.6, Math.PI);
+  [-30.6, -30.0, -29.4].forEach((x, i) => P("screen", x, -0.4, Math.PI + (i - 1) * 0.25, { y: FLOOR_Y + 0.76 }));
+  P("chair", -30.0, -1.5, 0);
+  P("drawer", -37.35, -1.4, Math.PI / 2);
+  P("bookcase", -37.4, 1.4, Math.PI / 2);
+  P("sofa", -25.0, 3.6, Math.PI);
+  P("roundTable", -25.2, 1.6, 0);
   P("plant", -23.2, 4.3, 0);
+  P("plant", -36.6, 4.2, 0);
   // 6. Dispatch: two desks facing the GPS wall
   [0.2, 2.4].forEach((z) => {
     P("desk", -19.3, z, Math.PI / 2);
@@ -1282,7 +1260,7 @@ HOUSE_ROWS.forEach((row) => {
       face: row.face,
       roadZ: row.roadZ,
       drivewayX: lx(-1.9),
-      parkPoint: new THREE.Vector3(lx(-1.9), 0, originZ + row.face * 6.0),
+      parkPoint: new THREE.Vector3(lx(-1.9), 0, originZ + row.face * 6.6), // rear stays clear of the garage face
       doorPoint: new THREE.Vector3(lx(-0.1), 0.45, originZ + row.face * 4.2 * S),
     });
     houseCount++;
@@ -2046,8 +2024,7 @@ function updateDriver(v, dt, time) {
     }
     if (!v.driverP) { v.timer -= dt; if (v.timer <= 0) v.loadDone = true; }
     if (v.loadDone) {
-      v.loadStarted = false;
-      // Wait until the lane by the driveway is clear before pulling out
+      // Wait until the lane by the driveway is clear before pulling out (the routine ran once; do not restart it)
       // Moving traffic near the driveway blocks us; a car queued (stopped) behind does not
       const lane = v.path.getPointAt(stop.laneS / v.length);
       const busy = vehicles.some((o) => {
@@ -2056,6 +2033,7 @@ function updateDriver(v, dt, time) {
         return o.speed > 0.5 ? d < 16 : d < 7 && !o.holding;
       });
       if (!busy) {
+        v.loadStarted = false;
         v.state = "exit";
         v.m = 0;
       }
@@ -2329,6 +2307,7 @@ function selectZone(index) {
 }
 
 function resetToOverview() {
+  toggle360(false);
   currentZoneIndex = -1;
   targetCameraLook.copy(OVERVIEW_CAMERA.target);
   targetCameraPos.copy(OVERVIEW_CAMERA.position);
@@ -2347,6 +2326,26 @@ function syncCategoryPills(activeCategory) {
     }
   });
 }
+
+// ─── 360 ROTATION CONTROLLER ───────────────────────────────────────────────
+let is360Active = false;
+function toggle360(force) {
+  is360Active = typeof force === "boolean" ? force : !is360Active;
+  controls.autoRotate = is360Active;
+  controls.autoRotateSpeed = 2.4;
+  isAnimatingCamera = false;
+
+  const b1 = document.getElementById("btn360");
+  const b2 = document.getElementById("btnRotate360");
+  if (b1) b1.classList.toggle("active", is360Active);
+  if (b2) b2.classList.toggle("active", is360Active);
+}
+
+const b360 = document.getElementById("btn360");
+if (b360) b360.addEventListener("click", () => toggle360());
+
+const bRot = document.getElementById("btnRotate360");
+if (bRot) bRot.addEventListener("click", () => toggle360());
 
 // ─── LISTENERS ──────────────────────────────────────────────────────────────
 filterPills.forEach((pill) => {
@@ -2762,19 +2761,20 @@ const ST = (x, z, yaw, anim, min, max, node) => ({ x, z, yaw, anim, min, max, no
 const FACE = { n: 0, s: Math.PI, e: Math.PI / 2, w: -Math.PI / 2 }; // n = +z (towards the street)
 
 // Rooms
+// Workshop: washers west of the x=-2.5 partition, packers east of it; the opening is at z -9.6..-6.4
 const G_SHOP = makeGraph(
-  [[-13.0, -7.6], [-11.6, -7.6], [-9.6, -7.6], [-6.5, -7.6], [-5.15, -7.6], [-3.4, -7.2], [-1.0, -7.0], [1.4, -7.0], [1.4, -5.4], [1.4, -4.3],
-   [-5.15, -4.0], [-8.0, -4.0], [-10.3, -4.0], [-11.0, -9.0], [-5.0, -9.0], [1.0, -9.0], [-6.5, -6.9], [-11.6, -6.4], [-9.6, -6.4], [2.0, -6.4], [2.0, -8.2]],
-  [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 7], [7, 8], [8, 9], [4, 10], [10, 11], [11, 12], [1, 13], [4, 14], [7, 15], [3, 16], [1, 17], [2, 18], [8, 19], [7, 20]]
+  [[-12.0, -7.7], [-12.0, -9.2], [-11.6, -6.4], [-9.6, -6.4], [-10.5, -7.0], [-6.5, -6.9], [-6.2, -9.0], [-5.0, -7.0], [-2.6, -8.0], [-5.15, -4.0],
+   [-10.3, -4.0], [-8.0, -4.0], [-11.0, -9.0], [-5.0, -9.0], [1.4, -9.0], [-1.3, -7.3], [0.2, -7.3], [-0.8, -4.0], [2.6, -8.4], [2.6, -6.2], [0.5, -6.0]],
+  [[0, 4], [1, 4], [2, 4], [3, 4], [4, 7], [5, 7], [6, 7], [7, 8], [7, 9], [9, 10], [10, 11], [4, 12], [7, 13], [8, 20], [20, 15], [20, 16], [20, 17], [20, 19], [19, 18], [18, 14]]
 );
 const WASH_ST = [
-  ST(-11.6, -6.4, FACE.n, "work", 8, 20, 17), ST(-9.6, -6.4, FACE.n, "work", 8, 20, 18), ST(-6.5, -6.9, FACE.n, "work", 6, 14, 16),
-  ST(-3.4, -6.9, FACE.n, "work", 6, 12, 5), ST(2.0, -6.4, FACE.e, "work", 6, 14, 19), ST(2.0, -8.2, FACE.e, "work", 6, 14, 20),
-  ST(-10.3, -4.0, FACE.n, "work", 6, 12, 12), ST(-8.0, -4.0, FACE.n, "work", 5, 10, 11),
+  ST(-11.6, -6.4, FACE.n, "work", 8, 20, 2), ST(-9.6, -6.4, FACE.n, "work", 8, 20, 3), ST(-6.5, -6.9, FACE.n, "work", 6, 14, 5),
+  ST(-6.2, -9.0, FACE.w, "work", 6, 12, 6), ST(-12.0, -7.7, FACE.w, "work", 6, 14, 0), ST(-12.0, -9.2, FACE.w, "work", 6, 14, 1),
+  ST(-10.3, -4.0, FACE.n, "work", 6, 12, 10), ST(-8.0, -4.0, FACE.n, "work", 5, 10, 11),
 ];
 const PACK_ST = [
-  ST(1.4, -4.3, FACE.s, "work", 8, 16, 9), ST(-1.0, -7.2, FACE.s, "work", 8, 18, 6),
-  ST(-13.0, -8.4, FACE.s, "work", 5, 10, 0), ST(-8.0, -8.5, FACE.s, "work", 5, 10, 2),
+  ST(-0.8, -4.0, FACE.n, "work", 8, 16, 17), ST(-1.3, -7.3, FACE.s, "work", 8, 18, 15), ST(0.2, -7.3, FACE.s, "work", 6, 12, 16),
+  ST(2.6, -8.4, FACE.e, "work", 5, 10, 18), ST(2.6, -6.2, FACE.e, "work", 5, 10, 19),
 ];
 const G_RECEP = makeGraph(
   [[-5.2, 6.6], [-5.2, 4.0], [-6.6, 2.6], [-4.2, 2.6], [-1.6, 2.6], [1.0, 2.2], [-9.6, 0.2], [-8.4, 0.3], [-6.4, 0.2], [-4.4, 0.3], [-2.6, 0.2], [-2.6, 2.6], [-11.2, 1.3], [-9.2, 2.6], [-1.6, -1.2]],
@@ -2791,15 +2791,23 @@ const MGMT_ST = [
   ST(-34.0, -8.9, FACE.n, "sit", 15, 40, 0), ST(-28.6, -9.0, FACE.s, "talk", 6, 14, 2), ST(-25.2, -6.5, FACE.w, "talk", 6, 12, 4),
   ST(-23.4, -4.6, FACE.e, "work", 3, 6, 5), ST(-29.0, -7.4, Math.atan2(1.5, 0.9), "sit", 10, 25, 6), ST(-26.0, -5.6, Math.atan2(-1.5, -0.9), "sit", 10, 25, 7), ST(-35.5, -4.6, FACE.w, "work", 3, 6, 9),
 ];
-const G_IT = makeGraph([[-17.6, -4.15], [-16.4, -4.6], [-19.8, -8.0], [-17.0, -6.6], [-21.0, -8.0], [-15.0, -6.5]], [[0, 1], [1, 3], [3, 2], [3, 4], [3, 5]]);
-const IT_ST = [ST(-17.6, -4.15, FACE.s, "sit", 15, 40, 0), ST(-19.8, -8.0, FACE.s, "work", 6, 12, 2), ST(-21.0, -8.0, FACE.s, "work", 6, 12, 4), ST(-15.0, -6.5, FACE.e, "talk", 5, 10, 5)];
+// Drivers' room: route board, lockers, key board, cash safe, briefing table
+const G_DRV = makeGraph(
+  [[-20.9, -6.5], [-17.0, -8.6], [-15.0, -8.0], [-15.2, -4.0], [-18.0 + 1.06, -6.0 + 1.06], [-18.0 - 1.06, -6.0 - 1.06], [-18.0, -4.0], [-18.0, -8.0], [-16.4, -6.0]],
+  [[0, 6], [0, 7], [6, 4], [7, 5], [7, 1], [1, 2], [2, 8], [8, 3], [6, 8]]
+);
+const DRV_ST = [
+  ST(-20.9, -6.5, FACE.w, "work", 5, 10, 0), ST(-17.0, -8.6, FACE.s, "work", 4, 8, 1), ST(-15.0, -8.0, FACE.e, "work", 3, 6, 2), ST(-15.2, -4.0, FACE.e, "work", 4, 8, 3),
+  ST(-18.0 + 1.06, -6.0 + 1.06, Math.atan2(-1.06, -1.06), "sit", 10, 25, 4), ST(-18.0 - 1.06, -6.0 - 1.06, Math.atan2(1.06, 1.06), "sit", 10, 25, 5),
+];
 const G_DISP = makeGraph([[-18.4, 0.2], [-18.4, 2.4], [-17.2, 1.3], [-20.9, 1.15], [-17.2, 4.0], [-15.0, 1.3]], [[0, 2], [1, 2], [2, 3], [2, 4], [2, 5]]);
 const DISP_ST = [ST(-18.4, 0.2, FACE.w, "sit", 15, 40, 0), ST(-18.4, 2.4, FACE.w, "sit", 15, 40, 1), ST(-20.9, 1.15, FACE.w, "work", 6, 12, 3), ST(-17.2, 4.0, FACE.s, "talk", 4, 8, 4)];
-const G_PART = makeGraph(
-  [[-30.0, 6.6], [-29.2, 4.0], [-30.0, 1.0], [-28.5, 2.9], [-31.5, -1.3], [-26.6, -0.8], [-34.5, 3.4], [-34.5, 1.55], [-33.0, 0.6], [-32.5, -1.3], [-36.6, 0.6]],
-  [[0, 1], [1, 2], [1, 3], [2, 4], [2, 5], [2, 6], [7, 8], [8, 9], [8, 10], [3, 5]]
+// Owner's office
+const G_OWN = makeGraph(
+  [[-30.0, -1.5], [-30.0, 1.0], [-33.0, -2.0], [-36.4, 1.4], [-25.0, 3.0], [-27.5, 1.6]],
+  [[0, 1], [1, 2], [1, 3], [1, 5], [5, 4]]
 );
-const PART_STAFF_ST = [ST(-34.5, 1.55, FACE.n, "sit", 15, 40, 7), ST(-32.5, -1.3, FACE.s, "work", 5, 10, 9), ST(-36.6, 0.6, FACE.w, "idle", 3, 6, 10)];
+const OWN_ST = [ST(-30.0, -1.5, FACE.n, "sit", 15, 40, 0), ST(-33.0, -2.0, FACE.s, "work", 4, 8, 2), ST(-36.4, 1.4, FACE.w, "work", 3, 6, 3), ST(-25.0, 3.0, FACE.s, "sit", 8, 16, 4)];
 // Yard: loaders wait between the dock bays and by the west fence, never
 // inside a bay (the vans reverse through those); walking between spots goes along the fence side.
 const G_YARD = makeGraph(
@@ -2930,7 +2938,7 @@ function startLoading(v, stop) {
   const W = VAN.halfW;
   const cab = local(v, -W - 0.6, 1.3); // driver door (local +x is the van's left; the driver sits there)
   const rearSide = local(v, -W - 0.6, VAN.rearZ - 0.6);
-  const rear = local(v, 0, VAN.rearZ - 1.1);
+  const rear = local(v, 0, VAN.rearZ - 0.7);
   const door = stop.target.doorPoint.clone();
   const doorStand = door.clone().lerp(rear, 0.18);
   const yawTo = (from, to) => Math.atan2(to.x - from.x, to.z - from.z);
@@ -2970,10 +2978,19 @@ function handOverAtDock(stop, carpet) {
   const d = stop.target.doorPoint;
   if (loader.lastStation && loader.lastStation.busy === loader) loader.lastStation.busy = null;
   loader.tasks.length = 0;
-  loader.tasks.push(T.walk(d.x, d.z - 1.6), T.face(0), T.anim("work", 1.0), T.call((q) => { q.carry = carpet; }));
-  loader.tasks.push(T.walk(d.x, d.z + 1.4), T.walk(-9.6, -7.0), T.face(FACE.n), T.anim("work", 1.2), T.call((q) => { q.carry.visible = false; q.carry = null; }));
+  // Whatever the loader was carrying is dropped, otherwise it would freeze in mid-air
+  if (loader.carry) { loader.carry.visible = false; if (loader.carry.isBag) worldGroup.remove(loader.carry); loader.carry = null; }
+  // The loader carries a copy: the van's own roll mesh is reused at the next pickup
+  const bag = carpet.clone();
+  bag.isBag = true;
+  bag.visible = false;
+  worldGroup.add(bag);
+  loader.tasks.push(T.walk(d.x, d.z - 1.6), T.face(0), T.anim("work", 1.0), T.call((q) => { carpet.visible = false; q.carry = bag; }));
+  // Carry the bag to the washing line: dock 1 straight in, dock 2 via the corridor, dock 3 through the partition opening
+  const way = d.x < -8 ? [[d.x, -9.0], [-10.5, -7.0]] : d.x < -2.5 ? [[d.x, -9.0], [-5.0, -7.0], [-10.5, -7.0]] : [[d.x, -9.3], [-1.3, -9.3], [-2.6, -8.0], [-5.0, -7.0], [-10.5, -7.0]];
+  loader.tasks.push(...way.map(([x, z]) => T.walk(x, z)), T.face(FACE.n), T.anim("work", 1.2), T.call((q) => { if (q.carry) { q.carry.visible = false; worldGroup.remove(q.carry); } q.carry = null; }));
   const gapX = d.x < -5 ? -8.0 : -2.0; // pallet spot next to this bay
-  loader.tasks.push(T.walk(-5.0, -9.0), T.walk(d.x, -9.3), T.walk(d.x, -10.7), T.walk(gapX, -10.7), T.walk(gapX, -11.6), T.face(FACE.s));
+  loader.tasks.push(...way.slice(0, -1).reverse().map(([x, z]) => T.walk(x, z)), T.walk(d.x, -10.7), T.walk(gapX, -10.7), T.walk(gapX, -11.6), T.face(FACE.s));
 }
 
 function spawnPeople() {
@@ -3014,21 +3031,15 @@ function spawnPeople() {
     st.busy = w; w.lastStation = st;
     w.tasks.push(T.anim("work", 3 + i * 2));
   });
-  // 3. Integrations room: a manager checks the connected services and reports
-  addPerson({ ...U.managerW, recolor: { LimeGreen: BRANDC.charcoal, Gold: BRANDC.green }, x: -17.6, z: -4.15, rotY: FACE.s, anim: "sit", skin: S[3] }).job = stationJob(G_IT, IT_ST);
-  // 4. Management: the owner at the three-monitor desk, two managers at the meeting table
-  addPerson({ ...U.owner, x: -34.0, z: -8.9, rotY: FACE.n, anim: "sit", skin: S[1] }).job = stationJob(G_MGMT, [MGMT_ST[0], MGMT_ST[6], MGMT_ST[4]]);
-  addPerson({ ...U.managerW, x: -25.2, z: -6.5, rotY: FACE.w, anim: "talk" }).job = stationJob(G_MGMT, MGMT_ST.slice(1));
-  addPerson({ ...U.manager, recolor: { Suit: BRANDC.navy }, x: -28.6, z: -9.0, rotY: FACE.s, anim: "talk", skin: S[2] }).job = stationJob(G_MGMT, MGMT_ST.slice(1));
-  // 5. Partner point: an operator runs the kiosk
-  addPerson({ ...U.operator, recolor: { White: BRANDC.navy, Orange: BRANDC.charcoal, Hair_Blond: 0x1a1a1a }, x: -34.5, z: 1.55, rotY: FACE.n, anim: "sit", skin: S[3] }).job = stationJob(G_PART, PART_STAFF_ST);
-  const partnerVisits = [ST(-28.5, 2.9, FACE.s, "work", 4, 7, 3), ST(-31.5, -1.3, FACE.s, "work", 4, 7, 4), ST(-26.6, -0.8, FACE.s, "work", 3, 6, 5), ST(-34.5, 3.4, FACE.s, "talk", 4, 8, 6)];
-  for (let i = 0; i < 2; i++) {
-    const c = addPerson({ ...casualLook(), x: -30, z: 6.6, hidden: true });
-    c.job = customerJob(G_PART, { x: -30, z: 6.6 }, { x: -29.2, z: 4.0 }, partnerVisits);
-    c.tasks.push(T.anim("idle", 6 + i * 15));
-  }
-  addPerson({ ...U.driver, x: -33.0, z: 7.1, rotY: Math.PI, anim: "work", y: 0.09 }).job = stationJob(makeGraph([[-33.0, 7.1], [-36.5, 7.1], [-30.5, 7.3]], [[0, 1], [0, 2]]), [ST(-33.0, 7.1, FACE.s, "work", 6, 12, 0), ST(-36.5, 7.1, FACE.s, "work", 5, 10, 1), ST(-30.5, 7.3, FACE.n, "talk", 4, 8, 2)]);
+  // 3. Drivers' room: two drivers between shifts — route board, lockers, cash drop, briefing table
+  addPerson({ ...U.driver, x: -20.9, z: -6.5, rotY: FACE.w, anim: "work", skin: S[2] }).job = stationJob(G_DRV, DRV_ST);
+  addPerson({ ...U.driver, recolor: { White: BRANDC.green, LightBlue: BRANDC.charcoal, Red_Dark: BRANDC.black }, x: -16.94, z: -4.94, rotY: Math.atan2(-1.06, -1.06), anim: "sit", skin: S[0] }).job = stationJob(G_DRV, DRV_ST);
+  // 4. Managers: one at the desk (pricing queue), two at the meeting table (routes, cash)
+  addPerson({ ...U.manager, x: -34.0, z: -8.9, rotY: FACE.n, anim: "sit", skin: S[1] }).job = stationJob(G_MGMT, MGMT_ST);
+  addPerson({ ...U.managerW, x: -25.2, z: -6.5, rotY: FACE.w, anim: "talk" }).job = stationJob(G_MGMT, MGMT_ST);
+  addPerson({ ...U.manager, recolor: { Suit: BRANDC.navy }, x: -28.6, z: -9.0, rotY: FACE.s, anim: "talk", skin: S[2] }).job = stationJob(G_MGMT, MGMT_ST);
+  // 5. Owner's office
+  addPerson({ ...U.owner, x: -30.0, z: -1.5, rotY: FACE.n, anim: "sit", skin: S[1] }).job = stationJob(G_OWN, OWN_ST);
   // 6. Dispatch: operators send pickup drivers out from the board (requireDispatchRole includes receptionist)
   addPerson({ ...U.operator, recolor: { White: BRANDC.navy, Orange: BRANDC.charcoal, Hair_Blond: 0x2b1d14 }, x: -18.4, z: 0.2, rotY: FACE.w, anim: "sit" }).job = stationJob(G_DISP, DISP_ST);
   addPerson({ ...U.operatorM, x: -18.4, z: 2.4, rotY: FACE.w, anim: "sit", skin: S[1] }).job = stationJob(G_DISP, DISP_ST);
