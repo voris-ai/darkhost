@@ -1797,15 +1797,11 @@ const DOCK_TARGETS = DOCK_BAYS.map((b) => ({
 const CIVIL_ROUTES = [
   { kind: "police", loop: [P(W, MAIN), P(V[2], MAIN), P(V[2], S1), P(W, S1)], start: 0.1, maxSpeed: 6.5 },
   { kind: "muscle", loop: [{ x: V[0], z: MAIN }, { x: V[2], z: MAIN }, { x: V[2], z: S1 }, { x: V[0], z: S1 }], start: 0.6, maxSpeed: 6 },
-  { kind: "sport", loop: [{ x: V[1], z: MAIN }, { x: V[2], z: MAIN }, { x: V[2], z: S1 }, { x: V[1], z: S1 }], start: 0.8, maxSpeed: 7 },
-  // Seven more cars on different loops (both directions) so every block carries traffic
+  // More cars on different loops (both directions) so every block carries traffic
   { kind: "muscle", loop: [P(W, S1), P(V[2], S1), P(V[2], MAIN), P(W, MAIN)], start: 0.35, maxSpeed: 6.2 },
-  { kind: "sport", loop: [P(V[0], MAIN), P(V[1], MAIN), P(V[1], S1), P(V[0], S1)], start: 0.05, maxSpeed: 6.8 },
   { kind: "muscle", loop: [P(V[1], S1), P(V[0], S1), P(V[0], MAIN), P(V[1], MAIN)], start: 0.55, maxSpeed: 5.8 },
   { kind: "police", loop: [P(V[2], MAIN), P(V[1], MAIN), P(V[1], S1), P(V[2], S1)], start: 0.7, maxSpeed: 6.4 },
-  { kind: "sport", loop: [P(W, MAIN), P(W, S1), P(V[1], S1), P(V[1], MAIN)], start: 0.62, maxSpeed: 6.6 },
   { kind: "muscle", loop: [P(V[0], S1), P(V[2], S1), P(V[2], MAIN), P(V[0], MAIN)], start: 0.25, maxSpeed: 6.0 },
-  { kind: "sport", loop: [P(V[2], S1), P(W, S1), P(W, MAIN), P(V[2], MAIN)], start: 0.9, maxSpeed: 7.2 },
 ];
 
 const vehicles = [];
@@ -2156,7 +2152,7 @@ function setupVehicles() {
 
   // Residents' cars stand in their own driveways, and only at houses no van ever visits:
   // the street-side parking lane stays empty so a reversing van never sweeps through a parked car.
-  const parkedKinds = ["muscle", "sport", "muscle", "police", "sport"];
+  const parkedKinds = ["muscle", "police", "muscle", "police", "muscle"];
   const served = new Set(TRUCK_ROUTES.flatMap((r) => r.stops.filter((st) => st.house != null).map((st) => st.house)));
   let pk = 0;
   HOUSE_LOTS.forEach((lot, i) => {
@@ -2170,7 +2166,7 @@ function setupVehicles() {
   });
 
   // Customer cars in the campus yard stalls (nose toward the building)
-  [["sport", -37], ["muscle", -31], ["police", -25], ["muscle", -19]].forEach(([kind, x]) => {
+  [["muscle", -37], ["police", -31], ["muscle", -25], ["muscle", -19]].forEach(([kind, x]) => {
     const v = spawnVehicle(kind);
     v.root.position.set(x, ROAD_TOP, YARD.z1 - 3.0);
     v.root.lookAt(x, ROAD_TOP, YARD.z1);
@@ -2541,7 +2537,7 @@ function roleBadge(role) {
       ctx.fillText(ROLE_LABEL[role] || role, cw / 2, ch / 2 + 4);
     });
   }
-  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: _badgeTex[role], transparent: true, depthTest: false }));
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: _badgeTex[role], transparent: true, depthWrite: false }));
   sp.scale.set(1.1, 0.275, 1);
   sp.position.set(0, CHAR_H + 0.28, 0);
   sp.renderOrder = 5;
