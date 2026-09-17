@@ -539,10 +539,89 @@ M.wallInner = new THREE.MeshStandardMaterial({ color: 0xf1efe9, roughness: 0.9 }
 M.brandNavy = new THREE.MeshStandardMaterial({ color: new THREE.Color(0x033d53).convertSRGBToLinear(), roughness: 0.55 });
 M.brandGreen = new THREE.MeshStandardMaterial({ color: new THREE.Color(0x52b369).convertSRGBToLinear(), roughness: 0.55 });
 M.rollerDoor = new THREE.MeshStandardMaterial({ color: 0x9aa3ad, roughness: 0.6, metalness: 0.3 });
-M.carpetA = new THREE.MeshStandardMaterial({ color: 0x9b2c2c, roughness: 0.9 });
-M.carpetB = new THREE.MeshStandardMaterial({ color: 0x1e4d6b, roughness: 0.9 });
-M.carpetC = new THREE.MeshStandardMaterial({ color: 0xb8860b, roughness: 0.9 });
-M.carpetClean = new THREE.MeshStandardMaterial({ color: 0xd9c7a3, roughness: 0.9 });
+// Carpets read as real rugs: a woven field with a dark border, a light guard stripe and a lattice of
+// diamond medallions (canvas texture). Rolls get spiral end faces, jute backing, two straps and a loose flap.
+const _carpetTex = {};
+function carpetPatternTex(hex, portrait = false) {
+  const key = portrait ? "p" + hex : hex;
+  if (_carpetTex[key]) return _carpetTex[key];
+  const c = new THREE.Color(hex);
+  const hsl = {}; c.getHSL(hsl);
+  const css = (l, sat = hsl.s, a = 1) => `hsla(${Math.round(hsl.h * 360)}, ${Math.round(sat * 100)}%, ${Math.round(l * 100)}%, ${a})`;
+  const dark = css(Math.max(0.08, hsl.l * 0.45));
+  const light = css(Math.min(0.92, hsl.l + 0.32), hsl.s * 0.6);
+  const t = makeCanvasTexture(portrait ? 256 : 512, portrait ? 512 : 256, (ctx, w, h) => {
+    ctx.fillStyle = css(hsl.l); ctx.fillRect(0, 0, w, h);
+    // weave: fine alternating threads
+    for (let y = 0; y < h; y += 3) { ctx.fillStyle = y % 6 ? "rgba(0,0,0,0.07)" : "rgba(255,255,255,0.05)"; ctx.fillRect(0, y, w, 1); }
+    // border band, guard stripes
+    ctx.fillStyle = dark; ctx.fillRect(0, 0, w, 26); ctx.fillRect(0, h - 26, w, 26); ctx.fillRect(0, 0, 26, h); ctx.fillRect(w - 26, 0, 26, h);
+    ctx.strokeStyle = light; ctx.lineWidth = 3; ctx.strokeRect(34, 34, w - 68, h - 68); ctx.strokeRect(12, 12, w - 24, h - 24);
+    // small hooks along the border
+    ctx.fillStyle = light;
+    for (let x = 40; x < w - 40; x += 32) { ctx.fillRect(x, 8, 10, 4); ctx.fillRect(x, h - 12, 10, 4); }
+    // lattice of diamond medallions
+    for (let x = 96; x < w - 60; x += 80) for (let y = 72; y < h - 40; y += 56) {
+      ctx.fillStyle = dark; ctx.beginPath(); ctx.moveTo(x, y - 18); ctx.lineTo(x + 18, y); ctx.lineTo(x, y + 18); ctx.lineTo(x - 18, y); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = light; ctx.beginPath(); ctx.moveTo(x, y - 8); ctx.lineTo(x + 8, y); ctx.lineTo(x, y + 8); ctx.lineTo(x - 8, y); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = css(hsl.l); ctx.fillRect(x - 2, y - 2, 4, 4);
+    }
+    // fringe at both short ends
+    ctx.fillStyle = light; for (let y = 6; y < h - 6; y += 6) { ctx.fillRect(0, y, 6, 3); ctx.fillRect(w - 6, y, 6, 3); }
+  });
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  return (_carpetTex[key] = t);
+}
+function carpetEndTex(hex) {
+  const key = "end" + hex;
+  if (_carpetTex[key]) return _carpetTex[key];
+  const c = new THREE.Color(hex); const hsl = {}; c.getHSL(hsl);
+  const face = `hsl(${Math.round(hsl.h * 360)}, ${Math.round(hsl.s * 100)}%, ${Math.round(hsl.l * 100)}%)`;
+  const t = makeCanvasTexture(256, 256, (ctx, w, h) => {
+    ctx.fillStyle = "#d9c7a3"; ctx.fillRect(0, 0, w, h); // jute backing
+    // spiral: the rolled-up carpet seen from the end
+    ctx.lineWidth = 7; ctx.strokeStyle = face; ctx.beginPath();
+    for (let a = 0; a < Math.PI * 2 * 9; a += 0.05) { const r = 10 + a * 1.95; const x = w / 2 + Math.cos(a) * r, y = h / 2 + Math.sin(a) * r; a ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }
+    ctx.stroke();
+    ctx.lineWidth = 2; ctx.strokeStyle = "rgba(0,0,0,0.35)"; ctx.beginPath();
+    for (let a = 0; a < Math.PI * 2 * 9; a += 0.05) { const r = 14.5 + a * 1.95; const x = w / 2 + Math.cos(a) * r, y = h / 2 + Math.sin(a) * r; a ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }
+    ctx.stroke();
+    ctx.fillStyle = "#2b2b2b"; ctx.beginPath(); ctx.arc(w / 2, h / 2, 9, 0, Math.PI * 2); ctx.fill(); // hollow core
+  });
+  return (_carpetTex[key] = t);
+}
+function carpetMat(hex, repeatX = 1, repeatY = 1, portrait = false) {
+  const map = carpetPatternTex(hex, portrait).clone();
+  map.needsUpdate = true;
+  map.repeat.set(repeatX, repeatY);
+  return new THREE.MeshStandardMaterial({ color: 0xffffff, map, roughness: 0.95 });
+}
+const M_strap = new THREE.MeshStandardMaterial({ color: 0x2b2f36, roughness: 0.7 });
+// A rolled carpet lying along its local X axis (centre at the origin, bottom at -r)
+function makeRoll(hex, r = 0.24, len = 1.7) {
+  const g = new THREE.Group();
+  const side = carpetMat(hex, Math.max(1, Math.round(len / 1.2)), 2);
+  const end = new THREE.MeshStandardMaterial({ map: carpetEndTex(hex), roughness: 0.95 });
+  const geo = new THREE.CylinderGeometry(r, r, len, 20).rotateZ(Math.PI / 2);
+  const body = new THREE.Mesh(geo, [side, end, end]);
+  body.scale.y = 0.94; // rests a little flat
+  body.castShadow = true; body.receiveShadow = true;
+  g.add(body);
+  // loose outer edge of the carpet lying over the top of the roll
+  const flap = new THREE.Mesh(new THREE.BoxGeometry(len * 0.96, 0.025, r * 1.1), carpetMat(hex, Math.max(1, Math.round(len / 1.2)), 0.5));
+  flap.position.set(0, r * 0.8, -r * 0.55); flap.rotation.x = 0.55; flap.castShadow = true;
+  g.add(flap);
+  // two tie straps
+  [-0.3, 0.3].forEach((k) => {
+    const strap = new THREE.Mesh(new THREE.CylinderGeometry(r * 1.03, r * 1.03, 0.05, 20).rotateZ(Math.PI / 2), M_strap);
+    strap.position.x = k * len; strap.scale.y = 0.94; g.add(strap);
+  });
+  return g;
+}
+M.carpetA = carpetMat(0x9b2c2c, 2, 1);
+M.carpetB = carpetMat(0x1e4d6b, 2, 1);
+M.carpetC = carpetMat(0xb8860b, 2, 1);
+M.carpetClean = carpetMat(0xd9c7a3, 2, 1);
 M.steel = new THREE.MeshStandardMaterial({ color: 0xb9c0c8, roughness: 0.35, metalness: 0.7 });
 
 const cx = (a, b) => (a + b) / 2;
@@ -729,8 +808,9 @@ function machinePlate(text, w, x, z, y = 2.65, rotY = 0) {
   label3d(text, w, 0.4, { x, y, z }, rotY, { size: 0.55 });
 }
 function carpetRoll(g, color, x, y, z, rotY, r = 0.24, len = 1.7) {
-  const roll = createCylinder(r, r, len, 14, new THREE.MeshStandardMaterial({ color, roughness: 0.9 }), { x, y, z });
-  roll.rotation.set(0, rotY, Math.PI / 2);
+  const roll = makeRoll(color, r, len);
+  roll.position.set(x, y, z);
+  roll.rotation.y = rotY;
   g.add(roll);
   return roll;
 }
@@ -844,7 +924,8 @@ buildCentrifuge(-6.3, -5.6);
 machinePlate("ЦЕНТРИФУГА", 2.6, -6.3, -5.6);
 buildWringer(-8.0, -9.0);
 machinePlate("ОТЖИМ · ПРЕСС", 2.8, -8.0, -9.0);
-[-13.2, -11.6, -10.0, -8.4].forEach((rx, i) => buildDryRack(rx + 0.7, -3.0, [M.carpetA, M.carpetB, M.carpetC, M.carpetClean][i]));
+// Hung carpets show their short side: upright (portrait) pattern so the border and medallions keep their shape
+[-13.2, -11.6, -10.0, -8.4].forEach((rx, i) => buildDryRack(rx + 0.7, -3.0, carpetMat([0x9b2c2c, 0x1e4d6b, 0xb8860b, 0xd9c7a3][i], 1, 1, true)));
 buildFloorFan(-6.6, -3.2, Math.PI / 2);
 machinePlate("СУШКА", 2.0, -10.8, -3.0, 3.0);
 // Packing counter by the dispatch window
@@ -1031,6 +1112,21 @@ VAN_STALLS.forEach((st) => {
 });
 label3d("СТОЯНКА ВОДИТЕЛЕЙ · 5 МАШИН", 5.2, 0.5, { x: -23.4, y: 2.9, z: YARD.z0 + STALL_L + 1.0 }, Math.PI, { bg: "#52B369", size: 0.6 });
 [-1, 1].forEach((sg) => worldGroup.add(createCylinder(0.05, 0.05, 2.7, 8, M.graphite, { x: -23.4 + sg * 2.5, y: 1.35, z: YARD.z0 + STALL_L + 1.0 }, false)));
+// Customer drop-off bay: a marked parallel-parking space in the main road's parking lane right in front
+// of the reception door, with a sign on the sidewalk. The customer car parks here, nose to the west.
+const CUST_BAY = { x: -7.5, z: MAIN_ROAD_Z - PARK_OFFSET, x0: -10.6, x1: -4.4 };
+{
+  const z0 = MAIN_ROAD_Z - ROAD_W / 2 + 0.25, z1 = CUST_BAY.z + 1.3;
+  const y = ROAD_TOP + 0.015; // just above the road tiles
+  worldGroup.add(createBox(CUST_BAY.x1 - CUST_BAY.x0, 0.02, 0.12, M.roadStripe, { x: cx(CUST_BAY.x0, CUST_BAY.x1), y, z: z1 }, false));
+  [CUST_BAY.x0, CUST_BAY.x1].forEach((x) => worldGroup.add(createBox(0.12, 0.02, z1 - z0, M.roadStripe, { x, y, z: cx(z0, z1) }, false)));
+  worldGroup.add(createBox(0.12, 0.02, 0.9, M.roadStripe, { x: CUST_BAY.x, y, z: z0 + 0.45 }, false)); // "P" stem
+  worldGroup.add(createBox(0.5, 0.02, 0.12, M.roadStripe, { x: CUST_BAY.x + 0.2, y, z: z0 + 0.9 }, false));
+  worldGroup.add(createBox(0.5, 0.02, 0.12, M.roadStripe, { x: CUST_BAY.x + 0.2, y, z: z0 + 0.45 }, false));
+  worldGroup.add(createBox(0.12, 0.02, 0.45, M.roadStripe, { x: CUST_BAY.x + 0.45, y, z: z0 + 0.68 }, false));
+  worldGroup.add(createCylinder(0.05, 0.05, 2.3, 8, M.graphite, { x: CUST_BAY.x0 - 0.5, y: 1.15, z: MAIN_ROAD_Z - ROAD_W / 2 - 0.7 }, false));
+  label3d("P · КЛИЕНТЫ · ПРИЁМ КОВРОВ", 2.6, 0.4, { x: CUST_BAY.x0 - 0.5, y: 2.2, z: MAIN_ROAD_Z - ROAD_W / 2 - 0.7 }, 0, { bg: "#1d4ed8", size: 0.55 });
+}
 // Customer / staff parking stalls along the west part of the yard
 const STALL_XS = [-37, -34, -31, -28, -25, -22, -19];
 STALL_XS.forEach((sx, i) => {
@@ -1783,14 +1879,8 @@ function addTruckDressing(truck, plateText) {
   truck.carpetClean = makeCarpet(0xd9c7a3, 0x8b6f47);
 }
 
-const carpetGeo = new THREE.CylinderGeometry(0.24, 0.24, 1.7, 14).rotateZ(Math.PI / 2);
-const carpetEndGeo = new THREE.CylinderGeometry(0.25, 0.25, 0.08, 14).rotateZ(Math.PI / 2);
-function makeCarpet(color, endColor) {
-  const carpet = new THREE.Mesh(carpetGeo, new THREE.MeshStandardMaterial({ color, roughness: 0.9 }));
-  const end = new THREE.Mesh(carpetEndGeo, new THREE.MeshStandardMaterial({ color: endColor, roughness: 0.9 }));
-  end.position.x = 0.85;
-  carpet.add(end);
-  carpet.castShadow = true;
+function makeCarpet(color) {
+  const carpet = makeRoll(color, 0.24, 1.7);
   carpet.visible = false;
   worldGroup.add(carpet);
   return carpet;
@@ -3228,20 +3318,25 @@ function initCustomerCar(lot) {
     new THREE.Vector3(dx - 3.8, ROAD_TOP, 11.2),
     new THREE.Vector3(dx - 8.0, ROAD_TOP, 11.4),
     new THREE.Vector3(8.0, ROAD_TOP, 11.4),
-    new THREE.Vector3(0.0, ROAD_TOP, 11.4),
-    new THREE.Vector3(-3.2, ROAD_TOP, 11.0),
-    new THREE.Vector3(-4.8, ROAD_TOP, 9.5),
-    new THREE.Vector3(-5.2, ROAD_TOP, 8.2),
+    new THREE.Vector3(2.5, ROAD_TOP, 11.3),
+    new THREE.Vector3(-1.0, ROAD_TOP, 10.6),
+    new THREE.Vector3(-3.8, ROAD_TOP, CUST_BAY.z + 0.5),
+    new THREE.Vector3(-6.0, ROAD_TOP, CUST_BAY.z + 0.05),
+    new THREE.Vector3(CUST_BAY.x, ROAD_TOP, CUST_BAY.z),
   ];
   custPathTo = new THREE.CatmullRomCurve3(ptsTo, false, "catmullrom", 0.25);
   custLenTo = custPathTo.getLength();
 
   // 2. Path from Darkhost Drop-off back to Home Driveway
   const ptsHome = [
-    new THREE.Vector3(-5.2, ROAD_TOP, 8.2),
-    new THREE.Vector3(-4.6, ROAD_TOP, 10.5),
-    new THREE.Vector3(-2.2, ROAD_TOP, 14.8),
-    new THREE.Vector3(1.0, ROAD_TOP, 16.0),
+    new THREE.Vector3(CUST_BAY.x, ROAD_TOP, CUST_BAY.z),
+    new THREE.Vector3(-9.6, ROAD_TOP, CUST_BAY.z + 0.1),
+    new THREE.Vector3(-12.2, ROAD_TOP, CUST_BAY.z + 1.0),
+    new THREE.Vector3(-14.4, ROAD_TOP, 12.0),
+    new THREE.Vector3(-14.8, ROAD_TOP, 14.3),
+    new THREE.Vector3(-13.0, ROAD_TOP, 16.0),
+    new THREE.Vector3(-9.0, ROAD_TOP, 16.2),
+    new THREE.Vector3(0.0, ROAD_TOP, 16.2),
     new THREE.Vector3(8.0, ROAD_TOP, 16.0),
     new THREE.Vector3(dx - 8.0, ROAD_TOP, 16.0),
     new THREE.Vector3(dx - 4.0, ROAD_TOP, 15.6),
@@ -3261,18 +3356,28 @@ function initCustomerCar(lot) {
 
 function startCustomerDropoff() {
   if (!customerRunner) return;
-  // Step out right at driver side door of parked car
-  customerRunner.root.position.set(-4.3, 0.09, 8.2);
+  // Car is parked nose to the west: the driver's door is on the road side (+z), the boot at +x
+  const doorPt = { x: CUST_BAY.x + 0.5, z: CUST_BAY.z + 1.45 };
+  const bootPt = { x: CUST_BAY.x + 3.3, z: CUST_BAY.z + 0.3 };
+  const curb = { x: CUST_BAY.x + 3.0, z: MAIN_ROAD_Z - ROAD_W / 2 - 0.6 }; // sidewalk in front of the boot
+  customerRunner.root.position.set(doorPt.x, 0.09, doorPt.z);
   customerRunner.root.rotation.set(0, FACE.n, 0);
   customerRunner.root.visible = true;
-
-  if (customerCarpet) customerCarpet.visible = true;
-  customerRunner.carry = customerCarpet;
+  customerRunner.carry = null;
+  if (customerCarpet) customerCarpet.visible = false;
   customerRunner.tasks.length = 0;
   customerRunner.tasks.push(
-    T.walk(-4.8, 6.5),
-    T.walk(-4.8, 4.0),
-    T.walk(-1.6, 2.4),
+    T.anim("idle", 0.5),
+    T.walk(CUST_BAY.x + 2.4, CUST_BAY.z + 1.6, 1.0),
+    T.walk(bootPt.x, bootPt.z, 1.0),
+    T.face(FACE.w),
+    T.anim("work", 1.4), // open the boot
+    T.call((q) => { if (customerCarpet) customerCarpet.visible = true; q.carry = customerCarpet; }),
+    T.anim("work", 0.9), // lift the roll out, close the boot
+    T.walk(curb.x, curb.z, 1.05),
+    T.walk(-5.0, 5.9, 1.05),
+    T.walk(-5.0, 4.0, 1.05),
+    T.walk(-1.6, 2.4, 1.05),
     T.face(FACE.s),
     T.anim("work", 1.8),
     T.call((q) => {
@@ -3284,14 +3389,20 @@ function startCustomerDropoff() {
     T.face(FACE.s),
     T.anim("talk", 3.2),
     T.anim("idle", 0.6),
-    T.walk(-4.8, 4.0),
-    T.walk(-4.8, 6.5),
-    T.walk(-4.3, 8.2),
+    T.walk(-5.0, 4.0),
+    T.walk(-5.0, 5.9),
+    T.walk(curb.x, curb.z),
+    T.walk(bootPt.x, bootPt.z),
     T.face(FACE.w),
+    T.anim("work", 0.7), // check the boot is shut
+    T.walk(CUST_BAY.x + 2.4, CUST_BAY.z + 1.6),
+    T.walk(doorPt.x, doorPt.z),
+    T.face(FACE.w),
+    T.anim("idle", 0.4),
     T.call((q) => {
       q.root.visible = false;
       customerCarState = "ready_to_drive_home";
-      customerTimer = 1.0;
+      customerTimer = 1.4;
     })
   );
 }
@@ -3325,9 +3436,10 @@ function updateCustomerCar(dt, time = 0) {
       targetSpeed = 3.0;
       customerCar.signal = "left";
     } else if (t > 0.72) {
+      // ease into the bay: slower the closer we are, right indicator on
       const rem = totalLen - custDist;
-      targetSpeed = THREE.MathUtils.clamp(rem * 0.55, 0.4, 3.2);
-      customerCar.signal = "left";
+      targetSpeed = THREE.MathUtils.clamp(rem * 0.4, 0.3, 2.6);
+      customerCar.signal = "right";
     } else {
       customerCar.signal = null;
     }
