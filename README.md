@@ -4,9 +4,9 @@ Interactive 3D map of the Darkhost CRM enterprise (carpet cleaning): reception, 
 
 ## Online
 
-**Live demo:** https://interface-bar-throughout-reality.trycloudflare.com
+**Live demo:** https://voris-ai.github.io/darkhost-3d-showroom/
 
-Served through a Cloudflare tunnel from a local machine, so the link works only while that machine and `node server.js` are running. The address changes on every restart of the tunnel; a permanent GitHub Pages link will replace it once the repository is public.
+Permanent 24/7 cloud hosting via GitHub Pages. Works on any device without local server.
 
 ## Run
 
