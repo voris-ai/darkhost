@@ -17,7 +17,7 @@ const ZONES_DATA = [
       "Новый заказ и карточка клиента, заявка на скидку владельцу",
       "Курьер или самовывоз, перенос даты выдачи",
       "Доска цеха: отправить водителя на забор",
-      "Выдача готового заказа (без записи наличных)",
+      "Звонки клиентам, SMS-статусы, перенос сроков",
     ],
     connectedModules: ["Заказы", "Новый заказ", "Клиенты", "Доска цеха", "Выдача", "Календарь", "SMS клиентам"],
     cameraTarget: new THREE.Vector3(-6.4, 1.25, 1.4),
@@ -669,23 +669,22 @@ const FLOOR_Y = 0.11;
 // Queue screen + logo wall behind the desk
 worldGroup.add(createBox(3.0, 1.3, 0.08, M.graphite, { x: -6, y: 2.3, z: -1.85 }));
 worldGroup.add(createBox(2.8, 1.1, 0.06, M.screenGlow, { x: -6, y: 2.3, z: -1.8 }, false));
-// Carpet intake rack: rolled carpets waiting for tagging
-[-12.6, -12.0, -11.4, -10.8].forEach((rx, i) => {
-  const roll = createCylinder(0.22, 0.22, 2.2, 12, [M.carpetA, M.carpetB, M.carpetC, M.carpetA][i], { x: rx, y: 0.55, z: 3.0 });
-  roll.rotation.x = Math.PI / 2;
-  worldGroup.add(roll);
-});
-worldGroup.add(createBox(3.0, 0.32, 2.6, M.graphite, { x: -11.7, y: 0.16, z: 3.0 }));
-// Garment conveyor with wrapped clothes
-for (let r = 0; r < 2; r++) {
-  const rZ = -0.4 - r * 0.9;
-  worldGroup.add(createCylinder(0.04, 0.04, 2.4, 8, M.graphite, { x: -13.2, y: 1.2, z: rZ }));
-  worldGroup.add(createCylinder(0.04, 0.04, 2.4, 8, M.graphite, { x: -9.4, y: 1.2, z: rZ }));
-  worldGroup.add(createBox(3.9, 0.06, 0.06, M.steel, { x: -11.3, y: 2.35, z: rZ }));
-  for (let i = 0; i < 7; i++) {
-    worldGroup.add(createBox(0.38, 0.85, 0.1, shirtMats[i % shirtMats.length], { x: -12.9 + i * 0.52, y: 1.7, z: rZ }));
-    worldGroup.add(createBox(0.44, 0.95, 0.14, M.glassCyan, { x: -12.9 + i * 0.52, y: 1.7, z: rZ }, false));
+// Operators only work with orders, customers and calls — nothing physical is stored here.
+// Third operator: phone desk by the west wall (furniture in buildInterior), with a name plate
+machinePlate("ЗАКАЗЫ · ЗВОНКИ · SMS", 3.2, -11.2, 0.8, 2.65);
+// Rack of clean, packed garments lives with the packers (see section 2)
+function garmentRail(x, z, len, rotY, count) {
+  const g = new THREE.Group();
+  [-1, 1].forEach((sgn) => g.add(createCylinder(0.04, 0.04, 2.4, 8, M.graphite, { x: sgn * len / 2, y: 1.2, z: 0 })));
+  g.add(createBox(len + 0.3, 0.06, 0.06, M.steel, { x: 0, y: 2.35, z: 0 }));
+  for (let i = 0; i < count; i++) {
+    const gx = -len / 2 + 0.35 + i * ((len - 0.7) / (count - 1));
+    g.add(createBox(0.38, 0.85, 0.1, shirtMats[i % shirtMats.length], { x: gx, y: 1.7, z: 0 }));
+    g.add(createBox(0.44, 0.95, 0.14, M.glassCyan, { x: gx, y: 1.7, z: 0 }, false));
   }
+  g.position.set(x, 0.1, z);
+  g.rotation.y = rotY;
+  worldGroup.add(g);
 }
 
 // ── 2. ЦЕХ (x -14..4, z -10..-2): carpet washing line, centrifuge, wringer, drying racks, packing ──
@@ -833,9 +832,10 @@ machinePlate("СТИРАЛЬНЫЕ МАШИНЫ", 3.4, -12.85, -8.35, 2.65, Math
   const film = createCylinder(0.2, 0.2, 1.1, 14, M.glassCyan, { x: 0, y: 1.0, z: 0 }, false);
   film.rotation.z = Math.PI / 2;
   g.add(film);
-  g.position.set(-1.6, 0.1, -4.6);
+  g.position.set(2.4, 0.1, -3.4);
   worldGroup.add(g);
 }
+garmentRail(3.3, -4.0, 2.6, Math.PI / 2, 5); // packed clothes waiting for hand-out / courier
 machinePlate("ПРИЁМКА · ЗАМЕР", 3.2, -0.5, -8.4);
 machinePlate("УПАКОВКА", 2.4, -0.8, -3.0);
 label3d("УПАКОВКА · КОНТРОЛЬ", 3.2, 0.4, { x: -1.0, y: 1.7, z: -9.7 }, 0, { bg: "#52B369" });
@@ -904,6 +904,9 @@ function buildInterior() {
   [-8.6, -6.4, -4.2].forEach((x) => P("counter", x, 1.4, Math.PI));
   [-8.4, -4.4].forEach((x) => P("screen", x, 1.25, Math.PI, { y: FLOOR_Y + 1.05 }));
   [-8.4, -4.4].forEach((x) => P("chair", x, 0.3, 0));
+  P("desk", -11.2, 1.0, Math.PI, { h: 0.8 });
+  P("screen", -11.2, 1.25, Math.PI, { y: FLOOR_Y + 0.8 });
+  P("chair", -11.2, 0.1, 0);
   P("sofa", 1.3, 3.5, Math.PI);
   P("roundTable", 1.1, 1.5, 0);
   P("plant", 3.3, 4.3, 0);
@@ -915,7 +918,7 @@ function buildInterior() {
   [[-1.5, -8.5], [-0.7, -8.3], [0.4, -8.5]].forEach(([x, z], i) => cardboardBox(x, z, FLOOR_Y + 0.8, 0.4, i * 0.4));
   [-8.4, -6.2].forEach((z) => P("shelf", 3.5, z, -Math.PI / 2));
   [[3.5, -8.8, 0.6], [3.5, -8.0, 0.6], [3.5, -8.4, 1.2], [3.5, -6.6, 0.6], [3.5, -5.8, 0.6], [3.5, -6.2, 1.2], [3.5, -6.0, 0.0]].forEach(([x, z, y], i) => cardboardBox(x, z, FLOOR_Y + y, 0.42, (i % 3) * 0.15));
-  addLaundryCart(3.2, -4.4, 0);
+  addLaundryCart(-1.9, -5.4, 0);
   // 3. Drivers' room: table with chairs for the shift briefing, cooler, plant
   P("roundTable", -18.0, -6.0, 0, { h: 0.76 });
   for (let i = 0; i < 4; i++) {
@@ -2777,11 +2780,11 @@ const PACK_ST = [
   ST(2.6, -8.4, FACE.e, "work", 5, 10, 18), ST(2.6, -6.2, FACE.e, "work", 5, 10, 19),
 ];
 const G_RECEP = makeGraph(
-  [[-5.2, 6.6], [-5.2, 4.0], [-6.6, 2.6], [-4.2, 2.6], [-1.6, 2.6], [1.0, 2.2], [-9.6, 0.2], [-8.4, 0.3], [-6.4, 0.2], [-4.4, 0.3], [-2.6, 0.2], [-2.6, 2.6], [-11.2, 1.3], [-9.2, 2.6], [-1.6, -1.2]],
+  [[-5.2, 6.6], [-5.2, 4.0], [-6.6, 2.6], [-4.2, 2.6], [-1.6, 2.6], [1.0, 2.2], [-9.6, 0.2], [-8.4, 0.3], [-6.4, 0.2], [-4.4, 0.3], [-2.6, 0.2], [-2.6, 2.6], [-11.2, 0.1], [-9.2, 2.6], [-1.6, -1.2]],
   [[0, 1], [1, 2], [1, 3], [3, 4], [4, 5], [4, 11], [11, 10], [10, 9], [9, 8], [8, 7], [7, 6], [6, 12], [2, 13], [13, 12], [10, 14]]
 );
 const RECEP_STAFF_ST = [
-  ST(-8.4, 0.3, FACE.n, "sit", 12, 30, 7), ST(-4.4, 0.3, FACE.n, "sit", 12, 30, 9), ST(-11.2, 1.3, FACE.n, "work", 6, 12, 12), ST(-6.4, 0.2, FACE.n, "talk", 4, 8, 8), ST(-1.6, -1.2, FACE.e, "idle", 3, 6, 14),
+  ST(-8.4, 0.3, FACE.n, "sit", 12, 30, 7), ST(-4.4, 0.3, FACE.n, "sit", 12, 30, 9), ST(-11.2, 0.1, FACE.n, "sit", 12, 30, 12), ST(-6.4, 0.2, FACE.n, "talk", 4, 8, 8), ST(-1.6, -1.2, FACE.e, "talk", 3, 6, 14), ST(-9.2, 2.6, FACE.s, "talk", 4, 8, 13),
 ];
 const G_MGMT = makeGraph(
   [[-34.0, -8.9], [-32.2, -8.9], [-28.6, -9.0], [-30.0, -4.6], [-25.2, -6.5], [-23.4, -4.6], [-29.0, -7.4], [-26.0, -5.6], [-32.2, -6.0], [-35.5, -4.6]],
@@ -3000,22 +3003,13 @@ function spawnPeople() {
   // Operators (receptionist role): create orders and customers at the desk, hand orders out
   addPerson({ ...U.operator, x: -8.4, z: 0.3, rotY: 0, anim: "sit" }).job = stationJob(G_RECEP, RECEP_STAFF_ST);
   addPerson({ ...U.operatorM, x: -4.4, z: 0.3, rotY: 0, anim: "sit", skin: S[1] }).job = stationJob(G_RECEP, RECEP_STAFF_ST);
-  // Packer at the intake rack: takes walk-in carpets, tags them, hands self-pickup orders out
-  addPerson({ ...U.packer, x: -11.2, z: 1.3, rotY: 0, anim: "work", skin: S[3] }).job = stationJob(G_RECEP, [RECEP_STAFF_ST[2], RECEP_STAFF_ST[3], ST(-9.2, 2.6, FACE.s, "work", 5, 10, 13)]);
-  // Reception customers: walk in with a carpet, hand it over at the counter, sit a while, leave
-  const counterVisits = [
-    Object.assign(ST(-6.6, 2.6, FACE.s, "talk", 5, 9, 2), { onDone: (q) => { if (q.carry) { q.carry.visible = false; q.carry = null; } } }),
-    Object.assign(ST(-4.2, 2.6, FACE.s, "talk", 4, 8, 3), { onDone: (q) => { if (q.carry) { q.carry.visible = false; q.carry = null; } } }),
-    ST(1.0, 2.2, FACE.s, "idle", 5, 10, 5),
-  ];
+  addPerson({ ...U.operator, recolor: { White: BRANDC.navy, Orange: BRANDC.charcoal, Hair_Blond: 0x2b1d14 }, x: -11.2, z: 0.1, rotY: 0, anim: "sit", skin: S[3] }).job = stationJob(G_RECEP, RECEP_STAFF_ST);
+  // Reception customers: come in to place an order, ask about one or pay, sit a while, leave — carpets go through the drivers and the docks
+  const counterVisits = [ST(-6.6, 2.6, FACE.s, "talk", 5, 9, 2), ST(-4.2, 2.6, FACE.s, "talk", 4, 8, 3), ST(1.0, 2.2, FACE.s, "idle", 5, 10, 5)];
   for (let i = 0; i < 3; i++) {
     const c = addPerson({ ...casualLook(), x: -5.2, z: 6.6, hidden: true, y: 0.09 });
     c.floorY = FLOOR_Y;
-    const roll = makeCarpet([0x9b2c2c, 0x1e4d6b, 0xb8860b][i], 0xe0c9a6);
-    c.job = (p) => {
-      customerJob(G_RECEP, { x: -5.2, z: 6.6 }, { x: -5.2, z: 4.0 }, counterVisits)(p);
-      p.tasks.splice(3, 0, T.call((q) => { if (Math.random() < 0.7) q.carry = roll; }));
-    };
+    c.job = customerJob(G_RECEP, { x: -5.2, z: 6.6 }, { x: -5.2, z: 4.0 }, counterVisits);
     c.tasks.push(T.anim("idle", i * 12));
   }
   // 2. Workshop crew: washers on the wet side, packers on the dry side
