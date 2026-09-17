@@ -1764,9 +1764,16 @@ const TRUCK_ROUTES = [
   },
   {
     plate: "0103 DH 01",
-    loop: [P(W, MAIN), P(W, S1), P(V[0], S1), P(V[0], MAIN)],
-    start: 0.3,
-    stops: [{ dock: 2, kind: "dock" }, { house: 4, kind: "deliver" }, { house: 1, kind: "pickup" }, { dock: 2, kind: "dock" }, { house: 15, kind: "deliver" }, { house: 10, kind: "pickup" }],
+    loop: [P(V[2], MAIN), P(W, MAIN), P(W, S1), P(V[2], S1)],
+    start: 0.2,
+    stops: [
+      { house: 4, kind: "pickup" },
+      { dock: 2, kind: "dock" },
+      { house: 10, kind: "deliver" },
+      { house: 1, kind: "pickup" },
+      { dock: 2, kind: "dock" },
+      { house: 15, kind: "deliver" },
+    ],
   },
 ];
 const DOCK_TARGETS = DOCK_BAYS.map((b) => ({
