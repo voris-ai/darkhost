@@ -835,9 +835,17 @@ function buildCarpetWasher(x, z) {
   [-2.3, 0, 2.3].forEach((px) => [-1, 1].forEach((sgn) => g.add(createBox(0.1, 1.25, 0.1, M.steel, { x: px, y: 1.55, z: sgn * 0.88 }, false))));
   [-1, 1].forEach((sgn) => g.add(createBox(5.0, 0.1, 0.1, M.steel, { x: 0, y: 2.15, z: sgn * 0.88 }, false)));
   washerBrushes.length = 0;
+  // Brush rollers lie across the belt (axis along z). Bristle ridges around each roller make the spin visible;
+  // the roller is spun about its own axis (rotation.y in the tilted frame), not tumbled end over end.
   for (let i = 0; i < 4; i++) {
-    const b = createCylinder(0.24, 0.24, 1.55, 14, i % 2 ? M.crimsonRed : M.parkingBlue, { x: -1.9 + i * 1.25, y: 1.3, z: 0 });
+    const b = createCylinder(0.2, 0.2, 1.55, 14, i % 2 ? M.crimsonRed : M.parkingBlue, { x: -1.9 + i * 1.25, y: 1.3, z: 0 });
     b.rotation.x = Math.PI / 2;
+    for (let k = 0; k < 8; k++) {
+      const ridge = createBox(0.07, 1.5, 0.05, M.graphite, { x: 0, y: 0, z: 0 }, false);
+      ridge.position.set(Math.cos((k / 8) * Math.PI * 2) * 0.22, 0, Math.sin((k / 8) * Math.PI * 2) * 0.22);
+      ridge.rotation.y = -(k / 8) * Math.PI * 2;
+      b.add(ridge);
+    }
     g.add(b);
     washerBrushes.push(b);
   }
@@ -3967,7 +3975,7 @@ function updateWorkshop(dt) {
       washerConveyorCarpet.position.x = -2.2 + washerProgress * 3.8;
     }
     washerBrushes.forEach((b) => {
-      b.rotation.x += dt * 8;
+      b.rotation.y += dt * 8; // spin about the roller axis
     });
     if (washerProgress >= 1.0) {
       washerActive = false;
@@ -3977,7 +3985,7 @@ function updateWorkshop(dt) {
 
   // 2. Floor fan rotation
   if (floorFanHub) {
-    floorFanHub.rotation.y += dt * 6.0;
+    floorFanHub.rotation.z += dt * 6.0; // blades lie in the XY plane, so they spin about Z
   }
 
   // 3. Drying racks timer & Packer pickup
