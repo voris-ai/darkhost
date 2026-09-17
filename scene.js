@@ -8,20 +8,21 @@ const ZONES_DATA = [
     id: "intake",
     category: "intake",
     title: "Прием партии",
-    subtitle: "Зал приёмки и оформления партий ковров",
+    subtitle: "Широкий зал приёмки у доков: замер, взвешивание, оформление заявки",
     description:
-      "Специалисты приёма партии принимают ковры от клиентов и водителей доставки, взвешивают, маркируют штрих-кодами и размещают на поддонах. Отсюда мойщики забирают ковры в цех на автоматическую стирку.",
+      "Ковры привозят водители через доки и клиенты через вход. Специалист приёма раскатывает ковёр на столе замера, измеряет площадь, взвешивает, клеит штрих-код и оформляет заявку за стойкой. Готовая партия ждёт на поддоне «На мойку» — оттуда её забирает мойщик.",
     crmHref: "../web",
     crmActionLabel: "Открыть приёмку",
     features: [
-      "Приём партий ковров от клиентов и водителей",
-      "Взвешивание, маркировка штрих-кодами, замер площади",
-      "Размещение на поддонах для передачи мойщикам в цех",
+      "Приём партий ковров с доков и от клиентов",
+      "Стол замера: площадь, вес, маркировка штрих-кодом",
+      "Оформление заявки на месте, партия — на поддон «На мойку»",
+      "Мойщик забирает партию с поддона в цех мойки",
     ],
     connectedModules: ["Приёмка партий", "Доска цеха", "Склад приёма", "Партии"],
-    cameraTarget: new THREE.Vector3(-4.4, 1.25, 1.4),
-    cameraPosition: new THREE.Vector3(-1.0, 2.5, 5.5),
-    hotspotPosition: new THREE.Vector3(-4.4, 4.3, 1.4),
+    cameraTarget: new THREE.Vector3(-8.2, 1.2, -5.2),
+    cameraPosition: new THREE.Vector3(-3.4, 4.8, 0.6),
+    hotspotPosition: new THREE.Vector3(-8.2, 4.4, -5.2),
     badgeText: "Прием партии",
   },
   {
@@ -49,21 +50,21 @@ const ZONES_DATA = [
     id: "washer",
     category: "washer",
     title: "Мойщик",
-    subtitle: "Мокрая зона цеха · роль washer",
+    subtitle: "Передний цех мойки · роль washer",
     description:
-      "Мойщик видит одну доску: вещи, которые ждут мойки. На каждой — две кнопки: «В мойку» (приёмка → мойка) и «Мойка закончена» (мойка → сушка). Больше мойщику ничего не показывается — ни заказов, ни цен.",
+      "Мойщик видит одну доску: вещи, которые ждут мойки. На каждой — две кнопки: «В мойку» (приёмка → мойка) и «Мойка закончена» (мойка → сушка). За партией мойщик идёт в зал приёмки, забирает её с поддона «На мойку» и несёт на линию.",
     crmHref: "../web",
     crmActionLabel: "Открыть доску мойки",
     features: [
       "Доска мойки: все вещи всех заказов одним списком",
       "«В мойку» → стадия Мойка, «Мойка закончена» → Сушка",
-      "Линия мойки, центрифуга, отжим, стиральные машины, сушка",
+      "Забор партии с поддона приёмки → линия мойки, центрифуга, отжим, сушка",
       "Вход в приложение по SMS-коду",
     ],
     connectedModules: ["Приложение мойщика", "Стадии: Ожидает мойки · В мойке · На сушке", "Мониторинг цеха"],
-    cameraTarget: new THREE.Vector3(-8.5, 1.3, -6.5),
-    cameraPosition: new THREE.Vector3(-5.2, 3.4, -2.6),
-    hotspotPosition: new THREE.Vector3(-8.5, 4.4, -6.5),
+    cameraTarget: new THREE.Vector3(-7.5, 1.0, 2.3),
+    cameraPosition: new THREE.Vector3(-2.0, 3.0, 8.2),
+    hotspotPosition: new THREE.Vector3(-7.5, 4.3, 2.3),
     badgeText: "Мойщик",
   },
   {
@@ -744,42 +745,44 @@ pylonSign.position.set(CAMPUS.x0 - 1.2, 5.2, 5.06);
 worldGroup.add(pylonSign);
 
 // ── Interior partitions ──
-// x = -14: reception|dispatch (front) and workshop|IT (back)
-wallZDoor(-14, CAMPUS.zBack, -2, -6.5, -5.1);
-wallZDoor(-14, -2, CAMPUS.zFront, 0.6, 2.0);
+// x = -14: washers' hall|dispatch (front) and intake hall|drivers (back)
+wallZDoor(-14, CAMPUS.zBack, 0, -6.5, -5.1);
+wallZDoor(-14, 0, CAMPUS.zFront, 0.6, 2.0);
 // x = -22: dispatch|partner (front) and IT|management (back)
 wallZDoor(-22, CAMPUS.zBack, -3, -7.5, -6.1);
 wallZDoor(-22, -3, CAMPUS.zFront, 0.6, 2.0);
-// z = -2: reception|washers pass-through (carpet conveyor) and a door reception|packers (hand-out)
-wallXDoor(-2, -14, -1.0, -8.5, -5.5);
-wallXDoor(-2, -1.0, CAMPUS.x1, 1.0, 2.5);
-// x = -2.5: washers|packers partition with a wide opening at the back (dock traffic)
-wallZDoor(-2.5, CAMPUS.zBack, -2, -9.6, -6.4);
+// z = 0: intake hall|washers' hall — one wide opening in line with the front door: customers walk
+// straight through to the measuring table, the washers' runner fetches batches from the "На мойку" pallet
+wallXDoor(0, -14, -2.5, -6.7, -3.3);
+// z = -2: hand-out door packers|customer waiting nook
+wallXDoor(-2, -2.5, CAMPUS.x1, 1.0, 2.5);
+// x = -2.5: intake|packers partition with a wide opening at the back (dock traffic)
+wallZDoor(-2.5, CAMPUS.zBack, 0, -9.6, -6.4);
 // z = -3: IT room glass front and management|partner wall
 worldGroup.add(createBox(8 - 1.4, 2.9, 0.08, M.glass, { x: cx(-22, -14) - 0.7, y: 1.45, z: -3 }, false));
 worldGroup.add(createBox(0.1, 2.9, 0.12, M.graphite, { x: -14.7, y: 1.45, z: -3 }, false));
 wallXDoor(-3, CAMPUS.x0, -22, -27, -25.6);
 
 // Zone name plates above each doorway (inside)
-label3d("ПРИЕМ ПАРТИИ", 4.8, 0.6, { x: -4.5, y: 2.75, z: CAMPUS.zFront - 0.14 }, Math.PI, { bg: "#52B369", fg: "#ffffff", size: 0.65 });
+label3d("МОЙЩИК · ЦЕХ МОЙКИ", 4.8, 0.6, { x: -4.5, y: 2.75, z: CAMPUS.zFront - 0.14 }, Math.PI, { bg: "#0284c7", fg: "#ffffff", size: 0.6 });
 label3d("ОПЕРАТОР", 3.4, 0.55, { x: -18, y: 2.75, z: CAMPUS.zFront - 0.14 }, Math.PI, { bg: "#033D53", fg: "#ffffff", size: 0.6 });
 label3d("ВЛАДЕЛЕЦ", 3.0, 0.55, { x: -30, y: 2.75, z: CAMPUS.zFront - 0.14 }, Math.PI);
-label3d("МОЙЩИК", 2.4, 0.55, { x: -7, y: 2.72, z: -2 - 0.12 }, Math.PI);
+// z = 0 opening: "ПРИЕМ ПАРТИИ" on the washers' side, "МОЙКА" on the intake side
+label3d("ПРИЕМ ПАРТИИ", 3.4, 0.55, { x: -5.0, y: 2.72, z: 0.12 }, 0, { bg: "#52B369", fg: "#ffffff", size: 0.6 });
+label3d("→ МОЙКА", 2.4, 0.55, { x: -5.0, y: 2.72, z: -0.12 }, Math.PI, { bg: "#0284c7", fg: "#ffffff", size: 0.6 });
 label3d("УПАКОВЩИК", 2.8, 0.55, { x: 1.75, y: 2.72, z: -2 - 0.12 }, Math.PI);
 label3d("ВОДИТЕЛЬ · СМЕНА", 3.6, 0.5, { x: -18.7, y: 3.15, z: -3 - 0.1 }, Math.PI);
 label3d("МЕНЕДЖЕР", 3.0, 0.55, { x: -26.3, y: 2.75, z: -3 - 0.12 }, Math.PI);
 label3d("ОПЕРАТОР", 3.2, 0.55, { x: -18, y: 2.75, z: -3 + 0.12 }, 0, { bg: "#033D53", fg: "#ffffff", size: 0.55 });
-label3d("ПРИЕМ ПАРТИИ КОВРОВ", 5.0, 0.52, { x: -5.5, y: 2.5, z: -1.88 }, 0, { bg: "#52B369", fg: "#ffffff", size: 0.58 });
 
 // ── Interior: procedural fixtures now, poly.pizza furniture once the models load (buildInterior) ──
 const FLOOR_Y = 0.11;
 
-// ── 1. ПРИЁМНЫЙ ПУНКТ (x -14..4, z -2..5) ──
-// Queue screen + logo wall behind the desk
-worldGroup.add(createBox(3.0, 1.3, 0.08, M.graphite, { x: -6, y: 2.3, z: -1.85 }));
-worldGroup.add(createBox(2.8, 1.1, 0.06, M.screenGlow, { x: -6, y: 2.3, z: -1.8 }, false));
-// Front hall is dedicated to batch intake and registration:
-machinePlate("ОФОРМЛЕНИЕ ПАРТИЙ", 3.2, -11.2, 0.8, 2.65);
+// ── 1. ЦЕХ МОЙКИ (x -14..5.4, z 0..5): the front hall — washing line, dryers, centrifuge, wringer ──
+// Wash board on the partition wall: the washer's one board (waiting / washing / drying)
+worldGroup.add(createBox(3.0, 1.3, 0.08, M.graphite, { x: -10.2, y: 2.3, z: 0.15 }));
+worldGroup.add(createBox(2.8, 1.1, 0.06, M.screenGlow, { x: -10.2, y: 2.3, z: 0.2 }, false));
+label3d("ДОСКА МОЙКИ", 2.4, 0.36, { x: -10.2, y: 3.15, z: 0.12 }, 0, { bg: "#033D53", size: 0.6 });
 // Rack of clean, packed garments lives with the packers (see section 2)
 function garmentRail(x, z, len, rotY, count) {
   const g = new THREE.Group();
@@ -795,7 +798,7 @@ function garmentRail(x, z, len, rotY, count) {
   worldGroup.add(g);
 }
 
-// ── 2. ЦЕХ (x -14..4, z -10..-2): carpet washing line, centrifuge, wringer, drying racks, packing ──
+// ── 2. Machine builders (washing line, centrifuge, wringer, dryers, intake fixtures); packers' side is x -2.5..5.4, z -10..-2 ──
 // Every machine is built so it reads at a glance and carries a hanging name plate.
 const M_belt = new THREE.MeshStandardMaterial({ color: 0x1f2937, roughness: 0.9 });
 const M_hazard = new THREE.MeshStandardMaterial({ color: 0xfacc15, roughness: 0.5 });
@@ -815,19 +818,28 @@ function carpetRoll(g, color, x, y, z, rotY, r = 0.24, len = 1.7) {
   return roll;
 }
 // Carpet washing line: conveyor feeding a carpet under four rotating brushes with a spray bar
+let washerConveyorCarpet = null;
+const washerBrushes = [];
+let washerActive = false;
+let washerProgress = 0;
+
 function buildCarpetWasher(x, z) {
   const g = new THREE.Group();
   g.add(createBox(5.6, 0.9, 1.6, M.washerTeal, { x: 0, y: 0.45, z: 0 }));
   g.add(createBox(5.4, 0.3, 0.04, M.washerCyan, { x: 0, y: 0.42, z: 0.81 }, false)); // water level window
   g.add(createBox(5.9, 0.06, 1.3, M_belt, { x: 0, y: 0.93, z: 0 }, false)); // conveyor belt
-  g.add(createBox(4.6, 0.05, 1.1, M.carpetA, { x: -0.4, y: 0.98, z: 0 }, false)); // carpet going through
+  washerConveyorCarpet = createBox(4.6, 0.05, 1.1, M.carpetA, { x: -2.2, y: 0.98, z: 0 }, false);
+  washerConveyorCarpet.visible = false; // Starts empty! Only appears when carpet is placed on line
+  g.add(washerConveyorCarpet);
   [-1, 1].forEach((sgn) => g.add(createBox(5.9, 0.12, 0.08, M.metalSilver, { x: 0, y: 1.0, z: sgn * 0.7 }, false)));
   [-2.3, 0, 2.3].forEach((px) => [-1, 1].forEach((sgn) => g.add(createBox(0.1, 1.25, 0.1, M.steel, { x: px, y: 1.55, z: sgn * 0.88 }, false))));
   [-1, 1].forEach((sgn) => g.add(createBox(5.0, 0.1, 0.1, M.steel, { x: 0, y: 2.15, z: sgn * 0.88 }, false)));
+  washerBrushes.length = 0;
   for (let i = 0; i < 4; i++) {
     const b = createCylinder(0.24, 0.24, 1.55, 14, i % 2 ? M.crimsonRed : M.parkingBlue, { x: -1.9 + i * 1.25, y: 1.3, z: 0 });
     b.rotation.x = Math.PI / 2;
     g.add(b);
+    washerBrushes.push(b);
   }
   const pipe = createCylinder(0.05, 0.05, 5.2, 8, M.metalSilver, { x: 0, y: 2.0, z: 0 }, false);
   pipe.rotation.z = Math.PI / 2;
@@ -839,7 +851,9 @@ function buildCarpetWasher(x, z) {
   g.position.set(x, 0.1, z);
   worldGroup.add(g);
 }
-// Centrifuge: steel drum, hazard band, hinged lid with handle, control column, rolled carpet waiting
+
+// Centrifuge: steel drum, hazard band, hinged lid with handle, control column
+let centrifugeRoll = null;
 function buildCentrifuge(x, z) {
   const g = new THREE.Group();
   g.add(createCylinder(0.9, 0.9, 1.4, 24, M.steel, { x: 0, y: 0.7, z: 0 }));
@@ -854,12 +868,16 @@ function buildCentrifuge(x, z) {
   const btn = createCylinder(0.06, 0.06, 0.04, 10, M.crimsonRed, { x: 1.25, y: 0.75, z: 0.56 }, false);
   btn.rotation.x = Math.PI / 2;
   g.add(btn);
-  carpetRoll(g, 0x1e4d6b, -0.2, 0.24, 1.25, 0.25);
+  centrifugeRoll = carpetRoll(g, 0x1e4d6b, -0.2, 0.24, 1.25, 0.25);
+  centrifugeRoll.visible = false; // Starts empty!
   g.position.set(x, 0.1, z);
   worldGroup.add(g);
 }
+
 // Wringer press: two big steel rollers with a carpet pulled through between them
-function buildWringer(x, z) {
+let wringerCarpetOut = null;
+let wringerCarpetIn = null;
+function buildWringer(x, z, rotY = 0) {
   const g = new THREE.Group();
   g.add(createBox(2.4, 0.5, 1.7, M.graphite, { x: 0, y: 0.25, z: 0 }));
   [-1, 1].forEach((sgn) => g.add(createBox(0.16, 1.5, 0.5, M.steel, { x: sgn * 1.05, y: 1.2, z: 0 })));
@@ -873,14 +891,21 @@ function buildWringer(x, z) {
     g.add(createBox(2.0, 0.06, len, M.steel, { x: 0, y: 1.1, z: tz }, false));
     [-1, 1].forEach((sx) => g.add(createBox(0.06, 1.08, 0.06, M.steel, { x: sx * 0.9, y: 0.54, z: legZ }, false)));
   });
-  g.add(createBox(1.8, 0.05, 1.5, M.carpetC, { x: 0.1, y: 1.15, z: 0.95 }, false)); // carpet coming out the front
-  g.add(createBox(1.5, 0.05, 1.1, M.carpetC, { x: 0, y: 1.15, z: -0.8 }, false)); // and going in at the back
+  wringerCarpetOut = createBox(1.8, 0.05, 1.5, M.carpetC, { x: 0.1, y: 1.15, z: 0.95 }, false);
+  wringerCarpetIn = createBox(1.5, 0.05, 1.1, M.carpetC, { x: 0, y: 1.15, z: -0.8 }, false);
+  wringerCarpetOut.visible = false; // Starts empty!
+  wringerCarpetIn.visible = false; // Starts empty!
+  g.add(wringerCarpetOut);
+  g.add(wringerCarpetIn);
   g.add(createBox(0.4, 0.5, 0.3, M.graphite, { x: 1.45, y: 1.0, z: 0.6 })); // control box
   g.add(createBox(0.28, 0.18, 0.03, M.screenGlow, { x: 1.45, y: 1.1, z: 0.76 }, false));
   g.position.set(x, 0.1, z);
+  g.rotation.y = rotY;
   worldGroup.add(g);
 }
+
 // Drying: A-frame steel racks with a carpet hung over the top bar, plus a floor fan
+const DRY_RACKS = [];
 function buildDryRack(x, z, mat) {
   const g = new THREE.Group();
   [-1, 1].forEach((sgn) => {
@@ -891,12 +916,18 @@ function buildDryRack(x, z, mat) {
     });
   });
   g.add(createBox(1.7, 0.1, 0.1, M.steel, { x: 0, y: 2.55, z: 0 }, false));
-  g.add(createBox(1.3, 2.2, 0.12, mat, { x: 0, y: 1.42, z: 0.12 }));
-  g.add(createBox(1.3, 2.2, 0.12, mat, { x: 0, y: 1.42, z: -0.12 }));
-  g.add(createBox(1.3, 0.12, 0.36, mat, { x: 0, y: 2.56, z: 0 }, false));
+  const carpetGroup = new THREE.Group();
+  carpetGroup.add(createBox(1.3, 2.2, 0.12, mat, { x: 0, y: 1.42, z: 0.12 }));
+  carpetGroup.add(createBox(1.3, 2.2, 0.12, mat, { x: 0, y: 1.42, z: -0.12 }));
+  carpetGroup.add(createBox(1.3, 0.12, 0.36, mat, { x: 0, y: 2.56, z: 0 }, false));
+  carpetGroup.visible = false; // Starts empty!
+  g.add(carpetGroup);
   g.position.set(x, 0.1, z);
   worldGroup.add(g);
+  DRY_RACKS.push({ group: g, carpetGroup, mat, x, z, occupied: false, dryTimer: 0, packScheduled: false });
 }
+
+let floorFanHub = null;
 function buildFloorFan(x, z, rotY) {
   const g = new THREE.Group();
   g.add(createCylinder(0.45, 0.5, 0.08, 16, M.graphite, { x: 0, y: 0.04, z: 0 }));
@@ -905,35 +936,80 @@ function buildFloorFan(x, z, rotY) {
   ring.position.set(0, 1.5, 0);
   ring.castShadow = true;
   g.add(ring);
-  const hub = createCylinder(0.12, 0.12, 0.2, 12, M.graphite, { x: 0, y: 1.5, z: 0 }, false);
+  floorFanHub = new THREE.Group();
+  floorFanHub.position.set(0, 1.5, 0);
+  const hub = createCylinder(0.12, 0.12, 0.2, 12, M.graphite, { x: 0, y: 0, z: 0 }, false);
   hub.rotation.x = Math.PI / 2;
-  g.add(hub);
+  floorFanHub.add(hub);
   for (let i = 0; i < 3; i++) {
-    const blade = createBox(0.95, 0.16, 0.02, M.metalSilver, { x: 0, y: 1.5, z: 0 }, false);
+    const blade = createBox(0.95, 0.16, 0.02, M.metalSilver, { x: 0, y: 0, z: 0 }, false);
     blade.rotation.z = (i / 3) * Math.PI * 2;
-    g.add(blade);
+    floorFanHub.add(blade);
   }
+  g.add(floorFanHub);
   g.position.set(x, 0.1, z);
   g.rotation.y = rotY;
   worldGroup.add(g);
 }
 
-buildCarpetWasher(-10.8, -5.4);
-machinePlate("МОЙКА КОВРОВ", 3.0, -10.8, -5.4);
-buildCentrifuge(-6.3, -5.6);
-machinePlate("ЦЕНТРИФУГА", 2.6, -6.3, -5.6);
-buildWringer(-8.0, -9.0);
-machinePlate("ОТЖИМ · ПРЕСС", 2.8, -8.0, -9.0);
+// Intake hall fixtures: measuring table, platform scale, pallets
+let measureTableCarpet = null;
+function buildMeasureTable(x, z) {
+  const g = new THREE.Group();
+  g.add(createBox(4.0, 0.08, 2.0, M.warmOak, { x: 0, y: 0.84, z: 0 }));
+  [-1, 1].forEach((sx) => [-1, 1].forEach((sz) => g.add(createBox(0.1, 0.8, 0.1, M.graphite, { x: sx * 1.85, y: 0.4, z: sz * 0.85 }, false))));
+  [-1, 1].forEach((sz) => g.add(createBox(3.7, 0.06, 0.06, M.graphite, { x: 0, y: 0.3, z: sz * 0.85 }, false)));
+  measureTableCarpet = createBox(3.4, 0.05, 1.5, M.carpetB, { x: -0.1, y: 0.905, z: 0 }); // carpet unrolled for measuring
+  measureTableCarpet.visible = false; // Starts empty!
+  g.add(measureTableCarpet);
+  // yellow rule along the front edge with ticks every half metre, and a side rule
+  g.add(createBox(4.0, 0.02, 0.12, M_hazard, { x: 0, y: 0.89, z: 0.94 }, false));
+  for (let i = 0; i <= 8; i++) g.add(createBox(0.02, 0.03, 0.12, M.graphite, { x: -2.0 + i * 0.5, y: 0.9, z: 0.94 }, false));
+  g.add(createBox(0.12, 0.02, 2.0, M_hazard, { x: 1.94, y: 0.89, z: 0 }, false));
+  // tape measure lying on the carpet, tape pulled out
+  g.add(createCylinder(0.09, 0.09, 0.05, 14, M.parkingYellow, { x: 1.2, y: 0.955, z: -0.45 }, false));
+  g.add(createBox(1.6, 0.012, 0.03, M.parkingYellow, { x: 0.35, y: 0.94, z: -0.45 }, false));
+  g.position.set(x, FLOOR_Y, z);
+  worldGroup.add(g);
+}
+function buildPlatformScale(x, z) {
+  const g = new THREE.Group();
+  g.add(createBox(1.3, 0.12, 1.3, M.steel, { x: 0, y: 0.06, z: 0 }));
+  g.add(createBox(1.2, 0.02, 1.2, M.graphite, { x: 0, y: 0.13, z: 0 }, false));
+  g.add(createBox(0.12, 1.4, 0.12, M.graphite, { x: 0, y: 0.7, z: -0.75 }, false)); // display column at the back
+  g.add(createBox(0.5, 0.3, 0.12, M.graphite, { x: 0, y: 1.35, z: -0.72 }));
+  g.add(createBox(0.42, 0.2, 0.03, M.screenGlow, { x: 0, y: 1.35, z: -0.65 }, false));
+  g.position.set(x, FLOOR_Y, z);
+  worldGroup.add(g);
+}
+// Euro-pallet with a yellow floor marking; rolls = [[colour, dx, dz, stack height, rotY]]
+function buildPallet(x, z, w, d, rolls) {
+  worldGroup.add(createBox(w, 0.16, d, M.warmOak, { x, y: FLOOR_Y + 0.08, z }));
+  [-1, 1].forEach((s) => {
+    worldGroup.add(createBox(w + 0.3, 0.02, 0.08, M_hazard, { x, y: FLOOR_Y + 0.015, z: z + s * (d / 2 + 0.12) }, false));
+    worldGroup.add(createBox(0.08, 0.02, d + 0.3, M_hazard, { x: x + s * (w / 2 + 0.12), y: FLOOR_Y + 0.015, z }, false));
+  });
+  rolls.forEach(([hex, dx, dz, up, rotY]) => carpetRoll(worldGroup, hex, x + dx, FLOOR_Y + 0.38 + (up || 0), z + dz, rotY || 0, 0.22, Math.min((rotY ? d : w) - 0.4, 1.8)));
+}
+
+// Washers' hall, west of the entrance corridor (x -14..-6.7): washing line along the partition, dryers by the glass front
+buildCarpetWasher(-10.2, 1.2);
+machinePlate("МОЙКА КОВРОВ", 3.0, -10.2, 1.2);
 // Hung carpets show their short side: upright (portrait) pattern so the border and medallions keep their shape
-[-13.2, -11.6, -10.0, -8.4].forEach((rx, i) => buildDryRack(rx + 0.7, -3.0, carpetMat([0x9b2c2c, 0x1e4d6b, 0xb8860b, 0xd9c7a3][i], 1, 1, true)));
-buildFloorFan(-6.6, -3.2, Math.PI / 2);
-machinePlate("СУШКА", 2.0, -10.8, -3.0, 3.0);
+[-11.0, -9.4].forEach((rx, i) => buildDryRack(rx, 3.9, carpetMat([0x9b2c2c, 0x1e4d6b][i], 1, 1, true)));
+machinePlate("СУШКА", 2.0, -10.2, 3.9, 3.0);
+worldGroup.add(buildHeavyDutyWasher(-13.2, 3.4, M.washerTeal, Math.PI / 2));
+machinePlate("СТИРАЛЬНАЯ МАШИНА", 3.2, -12.85, 3.4, 2.65, Math.PI / 2);
+// East of the corridor (x -3.3..5.4): centrifuge, wringer, second machine on the east wall, fan in the corner
+buildCentrifuge(-1.5, 1.8);
+machinePlate("ЦЕНТРИФУГА", 2.6, -1.5, 1.8);
+buildWringer(2.2, 1.6, Math.PI / 2);
+machinePlate("ОТЖИМ · ПРЕСС", 2.8, 2.2, 1.6);
+worldGroup.add(buildHeavyDutyWasher(4.6, 4.0, M.washerTeal, -Math.PI / 2));
+buildFloorFan(-3.0, 0.7, Math.PI / 2);
 // Packing counter by the dispatch window
 worldGroup.add(createBox(3.0, 0.95, 1.1, M.counterWhite, { x: -0.8, y: 0.48, z: -3.0 }));
 worldGroup.add(createBox(2.8, 0.08, 0.95, new THREE.MeshStandardMaterial({ color: 0xf59e0b }), { x: -0.8, y: 0.99, z: -3.0 }));
-// Two industrial washers along the west wall (procedural: round glass door + control panel)
-[-7.6, -9.1].forEach((z) => worldGroup.add(buildHeavyDutyWasher(-13.2, z, M.washerTeal, Math.PI / 2)));
-machinePlate("СТИРАЛЬНЫЕ МАШИНЫ", 3.4, -12.85, -8.35, 2.65, Math.PI / 2);
 // Packers' side: wrapping station (film roll on a stand) and name plates
 {
   const g = new THREE.Group();
@@ -1009,38 +1085,47 @@ function cardboardBox(x, z, y, size, rotY = 0) {
   g.rotation.y = rotY;
   worldGroup.add(g);
 }
-let intakeBatchRoll = null;
+let intakeBatchRoll = null; // the batch on the "На мойку" pallet, waiting for the washers' runner
+let intakeTableRoll = null; // a customer's carpet lying on the measuring table
+let dockIncomingRoll = null; // carpet unloaded from company vans onto the dock pallet
 function buildInterior() {
   const P = prop;
-  // 1. Reception: long counter with terminals, staff chairs, lounge, water cooler, vending
-  [-8.6, -6.4, -4.2].forEach((x) => P("counter", x, 1.4, Math.PI));
-  [-8.4, -4.4].forEach((x) => P("screen", x, 1.25, Math.PI, { y: FLOOR_Y + 1.05 }));
-  [-8.4, -4.4].forEach((x) => P("chair", x, 0.3, 0));
-  P("desk", -11.2, 1.0, Math.PI, { h: 0.8 });
-  P("screen", -11.2, 1.25, Math.PI, { y: FLOOR_Y + 0.8 });
-  P("chair", -11.2, 0.1, 0);
-
-  // Dedicated Batch Intake Zone («ПРИЕМ ПАРТИИ»)
-  machinePlate("ПРИЁМ ПАРТИЙ КОВРОВ", 3.4, -1.2, 1.6, 2.75);
-  // Heavy-duty wooden Euro-pallets platform (starts completely empty!)
-  worldGroup.add(createBox(2.4, 0.16, 1.8, M.warmOak, { x: -1.2, y: FLOOR_Y + 0.08, z: 1.6 }));
-  worldGroup.add(createBox(2.44, 0.06, 0.08, M_hazard, { x: -1.2, y: FLOOR_Y + 0.18, z: 2.52 }, false));
-  worldGroup.add(createBox(0.08, 0.06, 1.84, M_hazard, { x: -2.42, y: FLOOR_Y + 0.18, z: 1.6 }, false));
-  worldGroup.add(createBox(0.08, 0.06, 1.84, M_hazard, { x: 0.02, y: FLOOR_Y + 0.18, z: 1.6 }, false));
-  // Industrial platform weight scale & barcode scanner pillar
-  worldGroup.add(createBox(0.4, 1.1, 0.25, M.graphite, { x: -0.2, y: FLOOR_Y + 0.55, z: 2.4 }));
-  worldGroup.add(createBox(0.32, 0.22, 0.05, M.screenGlow, { x: -0.2, y: FLOOR_Y + 1.05, z: 2.54 }, false));
-  // Carpet roll on pallet (starts empty / hidden until customer brings it!)
-  intakeBatchRoll = carpetRoll(worldGroup, 0xb8860b, -1.2, FLOOR_Y + 0.35, 1.6, 0, 0.22, 1.8);
+  // 1. ПРИЕМ ПАРТИИ (x -14..-2.5, z -10..0): the wide intake hall at docks 1-2
+  // Registration desk by the west wall: the customer stands on the north side, the clerk sits facing them
+  P("desk", -12.0, -1.6, Math.PI, { h: 0.8 });
+  P("screen", -12.0, -1.35, Math.PI, { y: FLOOR_Y + 0.8 });
+  P("chair", -12.0, -2.5, 0);
+  machinePlate("ОФОРМЛЕНИЕ ЗАЯВКИ", 3.2, -12.0, -1.6, 2.65);
+  P("shelf", -13.4, -4.6, Math.PI / 2); // labels, barcode tags, order folders
+  // Measuring table in the middle of the hall: a carpet unrolled on it, rule along the edge, tape measure
+  buildMeasureTable(-8.5, -4.8);
+  machinePlate("ЗАМЕР · ПЛОЩАДЬ", 3.0, -8.5, -4.8, 2.75);
+  intakeTableRoll = carpetRoll(worldGroup, 0xb8860b, -8.5, FLOOR_Y + 1.15, -4.8, 0, 0.22, 2.0);
+  intakeTableRoll.visible = false;
+  // Platform scale with a display column and the barcode / label pillar next to it
+  buildPlatformScale(-4.6, -7.4);
+  worldGroup.add(createBox(0.4, 1.1, 0.25, M.graphite, { x: -3.4, y: FLOOR_Y + 0.55, z: -7.4 }));
+  worldGroup.add(createBox(0.32, 0.22, 0.05, M.screenGlow, { x: -3.4, y: FLOOR_Y + 1.05, z: -7.26 }, false));
+  machinePlate("ВЕСЫ · ШТРИХ-КОД", 3.0, -4.6, -7.4, 2.65);
+  // Pallets: incoming from the docks (between docks 1 and 2), a queue by the west wall,
+  // and the "На мойку" pallet by the opening — all start empty with no static props!
+  buildPallet(-8.0, -7.6, 2.4, 1.8, []);
+  machinePlate("ПРИЁМ С ДОКОВ", 2.8, -8.0, -7.6, 2.75);
+  dockIncomingRoll = carpetRoll(worldGroup, 0x9b2c2c, -8.0, FLOOR_Y + 0.38, -7.6, 0, 0.22, 1.8);
+  dockIncomingRoll.visible = false;
+  buildPallet(-13.0, -7.0, 1.8, 2.4, []);
+  buildPallet(-4.2, -2.6, 2.4, 1.8, []);
+  machinePlate("НА МОЙКУ", 2.2, -4.2, -2.6, 2.75);
+  intakeBatchRoll = carpetRoll(worldGroup, 0xb8860b, -4.2, FLOOR_Y + 0.38, -2.6, 0, 0.22, 1.8);
   intakeBatchRoll.visible = false;
+  P("plant", -13.3, -0.6, 0.6);
 
-  // Customer lounge area shifted east into the wider building extension
-  P("sofa", 2.8, 3.5, Math.PI);
-  P("roundTable", 2.6, 1.5, 0);
-  P("plant", 4.6, 4.3, 0);
-  P("plant", -13.3, 4.3, 0.6);
+  // Customer waiting nook by the hand-out door (x -2.5..5.4, z -2..0): sofa, table, cooler, vending
+  P("sofa", -0.4, -1.15, 0);
+  P("roundTable", -0.3, 0.3, 0);
+  P("plant", 3.6, -1.35, 0);
   P("cooler", 4.8, -1.4, -Math.PI / 2);
-  P("vending", 4.8, 0.5, -Math.PI / 2);
+  P("vending", 4.8, -0.3, -Math.PI / 2);
   // 2. Packers' side: intake desks with bags/boxes, shelves with packed orders, trolley
   [-1.3, 0.2].forEach((x) => P("desk", x, -8.4, Math.PI, { h: 0.8 }));
   [[-1.5, -8.5], [-0.7, -8.3], [0.4, -8.5]].forEach(([x, z], i) => cardboardBox(x, z, FLOOR_Y + 0.8, 0.4, i * 0.4));
@@ -1903,11 +1988,11 @@ const S1 = STREET_Z[0];
 const W = WEST_X;
 const P = (x, z) => ({ x, z });
 // Every loop passes the campus docks on street 1 heading east (docks on the right).
-// Docks 1-2 (x=-11, -5) open onto the washers' hall, dock 3 (x=1) onto the packers' side.
+// Docks 1-2 (x=-11, -5) open onto the intake hall, dock 3 (x=1) onto the packers' side.
 // Every van starts the day in its own stall in the yard ("base"): the driver walks out of the drivers'
-// room, gets in and pulls out. Stops then repeat: pickup at a house -> washer dock (hand the dirty carpet
+// room, gets in and pulls out. Stops then repeat: pickup at a house -> intake dock (hand the dirty carpet
 // in) -> packer dock (collect the clean, packed one; a packer has it waiting) -> deliver ... -> back to base.
-// A van never unloads at the packers' dock and never picks up at a washers' dock.
+// A van never unloads at the packers' dock and never picks up at an intake dock.
 const WASH_DOCKS = [0, 1];
 const PACK_DOCK = 2;
 const LOOP_V1 = [P(V[1], MAIN), P(W, MAIN), P(W, S1), P(V[1], S1)];
@@ -2322,6 +2407,10 @@ function setupVehicles() {
     truck.baseIndex = r.stall;
     truck.loadDur = 6.5;
     truck.timer = 6 + r.stall * 7;
+    if (TRUCK_DRIVERS[r.stall]) {
+      truck.driverP = TRUCK_DRIVERS[r.stall];
+      truck.driverP.truck = truck;
+    }
     truck.root.position.copy(base.target.parkPoint).setY(ROAD_TOP);
     truck.root.lookAt(base.target.parkPoint.x, ROAD_TOP, base.target.parkPoint.z - 10);
     const C = truck.path.getPointAt(base.laneS / truck.length);
@@ -2398,38 +2487,7 @@ Promise.all([
 });
 
 
-// 3. 3D Characters
-gltfLoader.load(
-  "models/character.glb",
-  (gltf) => {
-    function addChar(pos, rotY) {
-      const c = gltf.scene.clone();
-      c.traverse((child) => {
-        if (child.isMesh) {
-          child.castShadow = true;
-          child.receiveShadow = true;
-        }
-      });
-      c.scale.set(0.9, 0.9, 0.9);
-      c.position.set(pos.x, pos.y, pos.z);
-      c.rotation.y = rotY;
-      worldGroup.add(c);
-    }
-
-    // 1. Reception Staff behind front counter
-    addChar({ x: 0, y: 0.0, z: 1.6 }, Math.PI);
-    // 2. Customer in front of counter
-    addChar({ x: 0.8, y: 0.0, z: 3.6 }, 0);
-    // 3. Courier delivering package to first suburban house
-    addChar({ x: 26.5, y: 0.0, z: 5.6 }, -Math.PI / 4);
-    // 4. Workshop worker
-    addChar({ x: 1.2, y: 0.0, z: -3.5 }, Math.PI / 2);
-    // 5. Manager at desk
-    addChar({ x: -8.5, y: 0.0, z: -3.8 }, 0);
-  },
-  undefined,
-  (err) => console.warn("Character fallback", err)
-);
+// Static character placeholders removed; all staff and pedestrians are fully animated via spawnPeople()
 
 // ─── INTERACTIVE HOTSPOTS ───────────────────────────────────────────────────
 const hotspotElements = [];
@@ -2990,27 +3048,52 @@ const ST = (x, z, yaw, anim, min, max, node) => ({ x, z, yaw, anim, min, max, no
 const FACE = { n: 0, s: Math.PI, e: Math.PI / 2, w: -Math.PI / 2 }; // n = +z (towards the street)
 
 // Rooms
-// Workshop: washers west of the x=-2.5 partition, packers east of it; the opening is at z -9.6..-6.4
-const G_SHOP = makeGraph(
-  [[-12.0, -7.7], [-12.0, -9.2], [-11.6, -6.4], [-9.6, -6.4], [-10.5, -7.0], [-6.5, -6.9], [-6.2, -9.0], [-5.0, -7.0], [-2.6, -8.0], [-5.15, -4.0],
-   [-10.3, -4.0], [-8.0, -4.0], [-11.0, -9.0], [-5.0, -9.0], [1.4, -9.0], [-1.3, -7.3], [0.2, -7.3], [-0.8, -4.0], [2.6, -8.4], [2.6, -6.2], [0.5, -6.0]],
-  [[0, 4], [1, 4], [2, 4], [3, 4], [4, 7], [5, 7], [6, 7], [7, 8], [7, 9], [9, 10], [10, 11], [4, 12], [7, 13], [8, 20], [20, 15], [20, 16], [20, 17], [20, 19], [19, 18], [18, 14]]
+// Washers' hall (front, x -14..5.4, z 0..5): the entrance corridor x -6.7..-3.3 splits it into the line/dryer
+// side (west) and the centrifuge/wringer side (east)
+const G_WASH = makeGraph(
+  [[-5.0, 0.8], [-5.0, 2.8], [-5.0, 4.2], [-8.0, 2.8], [-12.0, 2.7], [-11.9, 3.4], [-1.5, 3.9], [2.2, 3.6], [3.3, 4.0]],
+  [[0, 1], [1, 2], [1, 3], [3, 4], [4, 5], [2, 6], [6, 7], [7, 8]]
 );
 const WASH_ST = [
-  ST(-11.6, -6.4, FACE.n, "work", 8, 20, 2), ST(-9.6, -6.4, FACE.n, "work", 8, 20, 3), ST(-6.5, -6.9, FACE.n, "work", 6, 14, 5),
-  ST(-6.2, -9.0, FACE.w, "work", 6, 12, 6), ST(-12.0, -7.7, FACE.w, "work", 6, 14, 0), ST(-12.0, -9.2, FACE.w, "work", 6, 14, 1),
-  ST(-10.3, -4.0, FACE.n, "work", 6, 12, 10), ST(-8.0, -4.0, FACE.n, "work", 5, 10, 11),
+  ST(-12.0, 2.7, FACE.s, "work", 8, 20, 4), ST(-8.0, 2.8, FACE.s, "work", 8, 20, 3), ST(-11.9, 3.4, FACE.w, "work", 6, 14, 5),
+  ST(-1.5, 3.9, FACE.s, "work", 6, 14, 6), ST(2.2, 3.6, FACE.s, "work", 6, 12, 7), ST(3.3, 4.0, FACE.e, "work", 5, 10, 8),
 ];
-const PACK_ST = [
-  ST(-0.8, -4.0, FACE.n, "work", 8, 16, 17), ST(-1.3, -7.3, FACE.s, "work", 8, 18, 15), ST(0.2, -7.3, FACE.s, "work", 6, 12, 16),
-  ST(2.6, -8.4, FACE.e, "work", 5, 10, 18), ST(2.6, -6.2, FACE.e, "work", 5, 10, 19),
-];
-const G_RECEP = makeGraph(
-  [[-5.2, 6.6], [-5.2, 4.0], [-6.6, 2.6], [-4.2, 2.6], [-1.6, 2.6], [1.0, 2.2], [-9.6, 0.2], [-8.4, 0.3], [-6.4, 0.2], [-4.4, 0.3], [-2.6, 0.2], [-2.6, 2.6], [-11.2, 0.1], [-9.2, 2.6], [-1.6, -1.2]],
-  [[0, 1], [1, 2], [1, 3], [3, 4], [4, 5], [4, 11], [11, 10], [10, 9], [9, 8], [8, 7], [7, 6], [6, 12], [2, 13], [13, 12], [10, 14]]
+const WASH_RUNNER = { x: -5.8, z: 1.2 }; // where the washers' runner waits, right by the intake opening
+// Packers' side of the workshop (x -2.5..5.4, z -10..-2)
+const G_PACK = makeGraph(
+  [[1.4, -9.0], [-1.3, -7.3], [0.2, -7.3], [-0.8, -4.0], [2.6, -8.4], [2.6, -6.2], [0.5, -6.0]],
+  [[6, 1], [6, 2], [6, 3], [6, 5], [5, 4], [4, 0]]
 );
-const RECEP_STAFF_ST = [
-  ST(-8.4, 0.3, FACE.n, "sit", 12, 30, 7), ST(-4.4, 0.3, FACE.n, "sit", 12, 30, 9), ST(-11.2, 0.1, FACE.n, "sit", 12, 30, 12), ST(-6.4, 0.2, FACE.n, "talk", 4, 8, 8), ST(-1.6, -1.2, FACE.e, "talk", 3, 6, 14), ST(-9.2, 2.6, FACE.s, "talk", 4, 8, 13),
+const PACK_ST = [
+  ST(-0.8, -4.0, FACE.n, "work", 8, 16, 3), ST(-1.3, -7.3, FACE.s, "work", 8, 18, 1), ST(0.2, -7.3, FACE.s, "work", 6, 12, 2),
+  ST(2.6, -8.4, FACE.e, "work", 5, 10, 4), ST(2.6, -6.2, FACE.e, "work", 5, 10, 5),
+];
+// Intake hall (x -14..-2.5, z -10..0): opening to the washers' hall at z=0, docks 1-2 in the back wall.
+// A free lane at x=-5.9 runs the whole depth between the measuring table and the scale / "На мойку" pallet.
+const INTAKE = {
+  inside: { x: -5.0, z: -1.0 }, // just inside the z=0 opening
+  hub: { x: -5.9, z: -2.4 }, // top of the lane
+  tableN: { x: -8.5, z: -3.1 }, // measuring table, north side (the measuring clerk)
+  tableS: { x: -8.5, z: -6.5 }, // measuring table, south side
+  tableE: { x: -5.9, z: -4.8 }, // east end of the table: the customer puts the carpet down here
+  scale: { x: -4.6, z: -6.0 }, // in front of the platform scale
+  desk: { x: -12.0, z: -2.5 }, // registration desk chair
+  deskCust: { x: -12.0, z: -0.8 }, // customer side of the desk
+  dockPallet: { x: -8.0, z: -9.2 }, // incoming pallet between docks 1 and 2
+  toWash: { x: -4.2, z: -1.0 }, // "На мойку" pallet by the opening
+  westPallet: { x: -11.4, z: -7.0 },
+};
+const G_INTAKE = makeGraph(
+  [[INTAKE.inside.x, INTAKE.inside.z], [INTAKE.hub.x, INTAKE.hub.z], [INTAKE.tableN.x, INTAKE.tableN.z], [INTAKE.tableS.x, INTAKE.tableS.z],
+   [INTAKE.scale.x, INTAKE.scale.z], [INTAKE.desk.x, INTAKE.desk.z], [INTAKE.dockPallet.x, INTAKE.dockPallet.z], [INTAKE.toWash.x, INTAKE.toWash.z],
+   [INTAKE.westPallet.x, INTAKE.westPallet.z], [-5.9, -6.6], [-5.9, -9.2], [INTAKE.tableE.x, INTAKE.tableE.z]],
+  [[0, 1], [1, 2], [2, 5], [1, 11], [11, 9], [9, 3], [9, 4], [9, 10], [10, 6], [3, 8], [5, 8], [0, 7]]
+);
+const INTAKE_ST = [
+  ST(INTAKE.tableN.x, INTAKE.tableN.z, FACE.s, "work", 8, 18, 2), ST(INTAKE.tableS.x, INTAKE.tableS.z, FACE.n, "work", 6, 14, 3),
+  ST(INTAKE.scale.x, INTAKE.scale.z, FACE.s, "work", 6, 12, 4), ST(INTAKE.desk.x, INTAKE.desk.z, FACE.n, "sit", 15, 35, 5),
+  ST(INTAKE.dockPallet.x, INTAKE.dockPallet.z, FACE.n, "work", 4, 8, 6), ST(INTAKE.toWash.x, INTAKE.toWash.z, FACE.s, "work", 4, 8, 7),
+  ST(INTAKE.westPallet.x, INTAKE.westPallet.z, FACE.w, "work", 4, 8, 8),
 ];
 const G_MGMT = makeGraph(
   [[-34.0, -8.9], [-32.2, -8.9], [-28.6, -9.0], [-30.0, -4.6], [-25.2, -6.5], [-23.4, -4.6], [-29.0, -7.4], [-26.0, -5.6], [-32.2, -6.0], [-35.5, -4.6]],
@@ -3163,10 +3246,30 @@ function pedestrianOnCrossing(v) {
   });
 }
 
-// ── Van drivers: step out at every stop, open the doors and carry the carpet by hand ──
+// ── Van drivers: physical presence inside drivers' room at start, walk out to vans when shift begins ──
+const TRUCK_DRIVERS = [];
+const DRIVER_INIT_SPOTS = [
+  // Driver 0 (stall 0, departs first): at route board reviewing stops
+  { x: -20.9, z: -6.5, rotY: FACE.w, anim: "work", skin: 2 },
+  // Driver 1 (stall 1, departs second): at key board picking keys
+  { x: -15.0, z: -8.0, rotY: FACE.e, anim: "work", skin: 1 },
+  // Driver 2 (stall 2, departs third): sitting at briefing table chair 1
+  { x: -16.94, z: -4.94, rotY: Math.atan2(-1.06, -1.06), anim: "sit", skin: 0 },
+  // Driver 3 (stall 3, departs fourth): sitting at briefing table chair 2
+  { x: -19.06, z: -7.06, rotY: Math.atan2(1.06, 1.06), anim: "sit", skin: 3 },
+  // Driver 4 (stall 4, departs fifth): at staff lockers
+  { x: -17.0, z: -8.6, rotY: FACE.s, anim: "work", skin: 2 },
+];
+
 function truckDriverFor(v) {
   if (v.driverP) return v.driverP;
-  v.driverP = addPerson({ ...U.driver, hidden: true, skin: SKINS[vehicles.indexOf(v) % SKINS.length] });
+  const idx = v.baseIndex !== undefined ? v.baseIndex : vehicles.filter((o) => o.kind === "truck").indexOf(v);
+  if (TRUCK_DRIVERS[idx]) {
+    v.driverP = TRUCK_DRIVERS[idx];
+    v.driverP.truck = v;
+    return v.driverP;
+  }
+  v.driverP = addPerson({ ...U.driver, skin: SKINS[idx % SKINS.length] });
   return v.driverP;
 }
 function local(v, x, z) {
@@ -3186,25 +3289,50 @@ function startLoading(v, stop) {
   const dirty = v.carpetDirty, clean = v.carpetClean;
   p.floorY = 0.09;
   if (stop.kind === "base") {
-    // Home stall: the driver walks in through the staff door to the route board, then back out to the van.
-    // On the very first run the day starts in the drivers' room, so only the way out is walked.
+    // Home stall: the driver walks out through the staff door into the yard to the van.
     const laneZ = YARD.z0 + STALL_L + 1.4; // yard lane in front of the stall heads
-    const room = stop.target.doorPoint;
-    const toRoom = [T.walk(cab.x, laneZ, 1.25), T.walk(DRIVERS_DOOR.x, laneZ, 1.25), T.walk(DRIVERS_DOOR.x, DRIVERS_DOOR.zOut, 1.25), T.walk(DRIVERS_DOOR.x, DRIVERS_DOOR.zIn, 1.25), T.walk(room.x, room.z, 1.25), T.face(FACE.w)];
-    const toVan = [T.walk(DRIVERS_DOOR.x, DRIVERS_DOOR.zIn, 1.25), T.walk(DRIVERS_DOOR.x, DRIVERS_DOOR.zOut, 1.25), T.walk(DRIVERS_DOOR.x, laneZ, 1.25), T.walk(cab.x, laneZ, 1.25), T.walk(cab.x, cab.z, 1.25), T.face(yawTo(cab, rearSide) + Math.PI)];
+    const toVan = [
+      T.walk(DRIVERS_DOOR.x, DRIVERS_DOOR.zIn, 1.25),
+      T.walk(DRIVERS_DOOR.x, DRIVERS_DOOR.zOut, 1.25),
+      T.walk(DRIVERS_DOOR.x, laneZ, 1.25),
+      T.walk(cab.x, laneZ, 1.25),
+      T.walk(cab.x, cab.z, 1.25),
+      T.face(yawTo(cab, rearSide) + Math.PI)
+    ];
     p.tasks.length = 0;
     if (v.firstRun) {
       v.firstRun = false;
-      p.root.position.set(room.x, 0.09, room.z);
-      p.root.rotation.y = FACE.w;
-      p.tasks.push(T.call((q) => { q.root.visible = true; }), T.anim("work", 4 + (v.baseIndex || 0) * 7));
+      // Driver was already physically present inside the room at p.initSpot (standing/sitting).
+      // He stands up/finishes, walks through the staff door, across the yard to his van!
+      p.tasks.push(
+        T.anim("idle", 0.5),
+        ...toVan,
+        T.anim("idle", 0.4),
+        T.call((q) => { q.root.visible = false; v.loadDone = true; })
+      );
+      return true;
     } else {
       p.root.position.set(cab.x, 0.09, cab.z);
       p.root.rotation.y = yawTo(cab, rearSide);
-      p.tasks.push(T.call((q) => { q.root.visible = true; }), ...toRoom, T.anim("work", 9));
+      p.root.visible = true;
+      const spot = p.initSpot || { x: -20.9, z: -6.5, rotY: FACE.w, anim: "work" };
+      const toRoom = [
+        T.walk(cab.x, laneZ, 1.25),
+        T.walk(DRIVERS_DOOR.x, laneZ, 1.25),
+        T.walk(DRIVERS_DOOR.x, DRIVERS_DOOR.zOut, 1.25),
+        T.walk(DRIVERS_DOOR.x, DRIVERS_DOOR.zIn, 1.25),
+        T.walk(spot.x, spot.z, 1.25),
+        T.face(spot.rotY)
+      ];
+      p.tasks.push(
+        ...toRoom,
+        T.anim(spot.anim, 8.0),
+        ...toVan,
+        T.anim("idle", 0.4),
+        T.call((q) => { q.root.visible = false; v.loadDone = true; })
+      );
+      return true;
     }
-    p.tasks.push(...toVan, T.anim("idle", 0.4), T.call((q) => { q.root.visible = false; v.loadDone = true; }));
-    return true;
   }
   p.root.position.set(cab.x, 0.09, cab.z);
   p.root.rotation.y = yawTo(cab, rearSide);
@@ -3223,12 +3351,10 @@ function startLoading(v, stop) {
   } else if (stop.kind === "deliver") {
     p.tasks.push(...takeFromVan(clean), ...goDoor(), ...placeAtDoor(clean), T.anim("talk", 1.5), T.call(() => { clean.visible = false; }), ...goRear());
   } else if (stop.kind === "unload") {
-    // Washers' dock: hand the dirty carpet in - nothing is taken back here
+    // Intake dock: hand the dirty carpet in - nothing is taken back here
     p.tasks.push(...takeFromVan(dirty), ...goDoor(), ...placeAtDoor(dirty), T.call(() => handOverAtDock(stop, dirty)), ...goRear());
   } else {
     // Packers' dock: only collect the clean, packed carpet a packer brings out - nothing is unloaded here
-    // If the packer gets pulled away to another dock meanwhile, the roll simply appears after a while so the van is never stuck
-    // A packer started carrying it out when the van committed to this dock, so it is usually already waiting
     p.tasks.push(...goDoor(), T.call(() => { if (!v.stageShow) v.stageShow = bringOutAtDock(stop, clean, yawTo(rear, door) + Math.PI / 2); }));
     p.tasks.push(T.wait(() => { if (!clean.visible && v.loadT > 30) v.stageShow(); return clean.visible; }));
     p.tasks.push(...pickAtDoor(clean), ...goRear(), ...putInVan(), T.call(() => { v.stageShow = null; }));
@@ -3238,8 +3364,7 @@ function startLoading(v, stop) {
   p.tasks.push(T.call((q) => { q.root.visible = false; v.loadDone = true; }));
   return true;
 }
-// A dock loader collects the dirty carpet from the dock and carries it to the washing line
-// Nearest yard packer to the dock door; one already carrying for another van is only taken when nobody else is free
+// A dock loader collects the dirty carpet from the dock and carries it onto the intake hall's incoming pallet
 function freeLoaderFor(d) {
   const byDist = people.filter((q) => q.isLoader).sort((a, b) => a.root.position.distanceTo(d) - b.root.position.distanceTo(d));
   return byDist.find((q) => !q.dockErrand) || byDist[0];
@@ -3251,17 +3376,24 @@ function handOverAtDock(stop, carpet) {
   loader.dockErrand = true;
   if (loader.lastStation && loader.lastStation.busy === loader) loader.lastStation.busy = null;
   loader.tasks.length = 0;
-  // Whatever the loader was carrying is dropped, otherwise it would freeze in mid-air
   if (loader.carry) { loader.carry.visible = false; if (loader.carry.isBag) worldGroup.remove(loader.carry); loader.carry = null; }
-  // The loader carries a copy: the van's own roll mesh is reused at the next pickup
   const bag = carpet.clone();
   bag.isBag = true;
   bag.visible = false;
   worldGroup.add(bag);
   loader.tasks.push(T.walk(d.x, d.z - 1.6), T.face(0), T.anim("work", 1.0), T.call((q) => { carpet.visible = false; q.carry = bag; }));
-  // Carry the bag to the washing line: dock 1 straight in, dock 2 via the corridor, dock 3 through the partition opening
-  const way = d.x < -8 ? [[d.x, -9.0], [-10.5, -7.0]] : d.x < -2.5 ? [[d.x, -9.0], [-5.0, -7.0], [-10.5, -7.0]] : [[d.x, -9.3], [-1.3, -9.3], [-2.6, -8.0], [-5.0, -7.0], [-10.5, -7.0]];
-  loader.tasks.push(...way.map(([x, z]) => T.walk(x, z)), T.face(FACE.n), T.anim("work", 1.2), T.call((q) => { if (q.carry) { q.carry.visible = false; worldGroup.remove(q.carry); } q.carry = null; }));
+  // Carry the bag onto the incoming pallet between docks 1 and 2 ("ПРИЁМ С ДОКОВ"); dock 3 goes through the partition opening
+  const way = d.x < -2.5 ? [[d.x, -9.2], [INTAKE.dockPallet.x, INTAKE.dockPallet.z]] : [[d.x, -9.3], [-1.3, -9.3], [-2.6, -8.6], [-5.9, -9.2], [INTAKE.dockPallet.x, INTAKE.dockPallet.z]];
+  loader.tasks.push(
+    ...way.map(([x, z]) => T.walk(x, z)),
+    T.face(FACE.n),
+    T.anim("work", 1.2),
+    T.call((q) => {
+      if (q.carry) { q.carry.visible = false; worldGroup.remove(q.carry); }
+      q.carry = null;
+      if (dockIncomingRoll) dockIncomingRoll.visible = true; // Carpet physically appears on dock pallet!
+    })
+  );
   const gapX = d.x < -5 ? -8.0 : -2.0; // pallet spot next to this bay
   loader.tasks.push(...way.slice(0, -1).reverse().map(([x, z]) => T.walk(x, z)), T.walk(d.x, -10.7), T.walk(gapX, -10.7), T.walk(gapX, -11.6), T.face(FACE.s), T.call((q) => { q.dockErrand = false; }));
 }
@@ -3385,18 +3517,25 @@ function startCustomerDropoff() {
     T.walk(curb.x, curb.z, 1.05),
     T.walk(-5.0, 5.9, 1.05),
     T.walk(-5.0, 4.0, 1.05),
-    T.walk(-1.6, 2.4, 1.05),
-    T.face(FACE.s),
+    // through the washers' hall and the z=0 opening into the intake hall; carpet goes onto the measuring table
+    T.walk(-5.0, 0.8, 1.05),
+    T.walk(INTAKE.hub.x, INTAKE.hub.z, 1.05),
+    T.walk(INTAKE.tableE.x, INTAKE.tableE.z, 1.05),
+    T.face(FACE.w),
     T.anim("work", 1.8),
     T.call((q) => {
       if (customerCarpet) customerCarpet.visible = false;
       q.carry = null;
-      if (intakeBatchRoll) intakeBatchRoll.visible = true;
+      if (intakeTableRoll) intakeTableRoll.visible = true; // the measuring clerk takes it from here (intakeMeasureJob)
     }),
-    T.walk(-4.2, 2.6),
+    // register the order at the desk, then leave the way they came
+    T.walk(INTAKE.hub.x, INTAKE.hub.z),
+    T.walk(INTAKE.deskCust.x, INTAKE.deskCust.z),
     T.face(FACE.s),
     T.anim("talk", 3.2),
     T.anim("idle", 0.6),
+    T.walk(-6.2, -0.9),
+    T.walk(-5.0, 0.8),
     T.walk(-5.0, 4.0),
     T.walk(-5.0, 5.9),
     T.walk(curb.x, curb.z),
@@ -3578,17 +3717,172 @@ function updateCustomerCar(dt, time = 0) {
   }
 }
 
-// Washer fetches carpet from "ПРИЕМ ПАРТИИ" only when customer has delivered one
+// Intake clerk: once a carpet lies on the measuring table, measure it, weigh and label it, then put it on the
+// Intake clerk: once a carpet lies on the measuring table or arrives at the dock pallet,
+// measure it, weigh and label it, then put it on the "На мойку" pallet where the washers' runner picks it up
+function intakeMeasureJob(p) {
+  // Case 1: Customer brought carpet to measuring table
+  if (intakeTableRoll && intakeTableRoll.visible && !intakeTableRoll.claimed) {
+    intakeTableRoll.claimed = true;
+    p.tasks.push(
+      T.walk(INTAKE.tableN.x, INTAKE.tableN.z),
+      T.face(FACE.s),
+      T.call(() => {
+        intakeTableRoll.visible = false;
+        if (measureTableCarpet) measureTableCarpet.visible = true;
+      }),
+      T.anim("work", 3.2), // Measuring with yellow rule & tape
+      T.call((q) => {
+        if (measureTableCarpet) measureTableCarpet.visible = false;
+        const c = intakeTableRoll.clone();
+        c.visible = true;
+        worldGroup.add(c);
+        q.carry = c;
+      }),
+      T.walk(INTAKE.hub.x, INTAKE.hub.z),
+      T.walk(-5.9, -6.6),
+      T.walk(INTAKE.scale.x, INTAKE.scale.z),
+      T.face(FACE.s),
+      T.anim("work", 2.2), // Weigh, print and stick barcode label
+      T.walk(-5.9, -6.6),
+      T.walk(INTAKE.hub.x, INTAKE.hub.z),
+      T.walk(-5.9, -1.0),
+      T.walk(INTAKE.toWash.x, INTAKE.toWash.z),
+      T.face(FACE.s),
+      T.anim("work", 1.2),
+      T.call((q) => {
+        if (q.carry) { worldGroup.remove(q.carry); q.carry = null; }
+        if (intakeBatchRoll) intakeBatchRoll.visible = true; // Batch appears on "На мойку" pallet!
+        intakeTableRoll.claimed = false;
+      }),
+      T.walk(-5.9, -1.0),
+      T.walk(INTAKE.hub.x, INTAKE.hub.z),
+      T.walk(INTAKE.tableN.x, INTAKE.tableN.z),
+      T.face(FACE.s),
+      T.anim("work", 2.0)
+    );
+    return;
+  }
+
+  // Case 2: Dirty carpet unloaded by truck driver at dock and brought to dock pallet
+  if (dockIncomingRoll && dockIncomingRoll.visible && !dockIncomingRoll.claimed) {
+    dockIncomingRoll.claimed = true;
+    p.tasks.push(
+      T.walk(INTAKE.dockPallet.x, INTAKE.dockPallet.z),
+      T.face(FACE.n),
+      T.anim("work", 1.2),
+      T.call((q) => {
+        dockIncomingRoll.visible = false;
+        const c = dockIncomingRoll.clone();
+        c.visible = true;
+        worldGroup.add(c);
+        q.carry = c;
+      }),
+      T.walk(INTAKE.tableN.x, INTAKE.tableN.z),
+      T.face(FACE.s),
+      T.anim("work", 1.0),
+      T.call((q) => {
+        if (q.carry) { worldGroup.remove(q.carry); q.carry = null; }
+        if (measureTableCarpet) measureTableCarpet.visible = true;
+      }),
+      T.anim("work", 3.0), // Measure area
+      T.call((q) => {
+        if (measureTableCarpet) measureTableCarpet.visible = false;
+        const c = carpetRoll(worldGroup, 0x9b2c2c, 0, 0, 0, 0, 0.22, 1.8);
+        q.carry = c;
+      }),
+      T.walk(INTAKE.hub.x, INTAKE.hub.z),
+      T.walk(-5.9, -6.6),
+      T.walk(INTAKE.scale.x, INTAKE.scale.z),
+      T.face(FACE.s),
+      T.anim("work", 2.2), // Weigh and barcode
+      T.walk(-5.9, -6.6),
+      T.walk(INTAKE.hub.x, INTAKE.hub.z),
+      T.walk(-5.9, -1.0),
+      T.walk(INTAKE.toWash.x, INTAKE.toWash.z),
+      T.face(FACE.s),
+      T.anim("work", 1.2),
+      T.call((q) => {
+        if (q.carry) { worldGroup.remove(q.carry); q.carry = null; }
+        if (intakeBatchRoll) intakeBatchRoll.visible = true; // Batch appears on "На мойку" pallet!
+        dockIncomingRoll.claimed = false;
+      }),
+      T.walk(-5.9, -1.0),
+      T.walk(INTAKE.hub.x, INTAKE.hub.z),
+      T.walk(INTAKE.tableN.x, INTAKE.tableN.z),
+      T.face(FACE.s),
+      T.anim("work", 2.0)
+    );
+    return;
+  }
+
+  p.tasks.push(T.anim("work", 2.0));
+}
+
+function startCarpetWashingLine() {
+  if (washerConveyorCarpet) {
+    washerConveyorCarpet.position.x = -2.2;
+    washerConveyorCarpet.visible = true;
+  }
+  washerActive = true;
+  washerProgress = 0;
+}
+
+function washerToCentrifugeAndDry(w) {
+  w.tasks.push(
+    T.walk(-8.0, 2.8), // Outlet of washing line
+    T.face(FACE.s),
+    T.anim("work", 1.2),
+    T.call((q) => {
+      if (washerConveyorCarpet) washerConveyorCarpet.visible = false;
+      const c = carpetRoll(worldGroup, 0x1e4d6b, 0, 0, 0, 0, 0.22, 1.8);
+      q.carry = c;
+    }),
+    // Carry to centrifuge
+    T.walk(-5.0, 2.8),
+    T.walk(-1.5, 3.2),
+    T.face(FACE.s),
+    T.anim("work", 1.2),
+    T.call((q) => {
+      if (q.carry) { worldGroup.remove(q.carry); q.carry = null; }
+      if (centrifugeRoll) centrifugeRoll.visible = true; // In centrifuge
+    }),
+    T.anim("work", 3.8), // Centrifuge spins and extracts water
+    T.call((q) => {
+      if (centrifugeRoll) centrifugeRoll.visible = false;
+      const c = carpetRoll(worldGroup, 0x1e4d6b, 0, 0, 0, 0, 0.22, 1.8);
+      q.carry = c;
+    }),
+    // Carry to Drying Rack
+    T.walk(-5.0, 2.8),
+    T.walk(-11.0, 2.8),
+    T.walk(-11.0, 3.4),
+    T.face(FACE.n),
+    T.anim("work", 1.5),
+    T.call((q) => {
+      if (q.carry) { worldGroup.remove(q.carry); q.carry = null; }
+      if (DRY_RACKS.length > 0) {
+        DRY_RACKS[0].carpetGroup.visible = true; // Hangs on rack!
+        DRY_RACKS[0].occupied = true;
+        DRY_RACKS[0].dryTimer = 12.0;
+      }
+    }),
+    T.walk(-11.0, 2.8),
+    T.walk(WASH_RUNNER.x, WASH_RUNNER.z),
+    T.face(FACE.s),
+    T.anim("idle", 2.0)
+  );
+}
+
+// Washers' runner: fetches a batch from the intake "На мойку" pallet only when one is waiting there
 function washerIntakeJob(w) {
-  if (!intakeBatchRoll || !intakeBatchRoll.visible) {
+  if (!intakeBatchRoll || !intakeBatchRoll.visible || washerActive) {
     w.tasks.push(T.anim("work", 2.0));
     return;
   }
   w.tasks.push(
-    T.walk(-7.0, -4.5),
-    T.walk(-7.0, -2.0),
-    T.walk(-3.5, 0.6),
-    T.walk(-1.2, 2.6),
+    T.walk(-5.0, 0.8),
+    T.walk(INTAKE.toWash.x, INTAKE.toWash.z),
     T.face(FACE.s),
     T.anim("work", 1.6),
     T.call((q) => {
@@ -3600,21 +3894,102 @@ function washerIntakeJob(w) {
         q.carry = c;
       }
     }),
-    T.walk(-3.5, 0.6),
-    T.walk(-7.0, -2.0),
-    T.walk(-7.0, -4.5),
-    T.walk(-10.8, -4.2),
-    T.face(FACE.n),
+    T.walk(-5.0, 0.8),
+    T.walk(-5.0, 2.8),
+    T.walk(-12.4, 2.8), // Conveyor line inlet
+    T.face(FACE.s),
     T.anim("work", 1.4),
     T.call((q) => {
       if (q.carry) {
         worldGroup.remove(q.carry);
         q.carry = null;
       }
+      startCarpetWashingLine();
     }),
-    T.anim("work", 4.5),
+    T.walk(-10.0, 2.8),
+    T.face(FACE.s),
+    T.anim("work", 6.8), // Watch washing line run
+    T.call((q) => {
+      washerToCentrifugeAndDry(q);
+    })
+  );
+}
+
+function packerCollectDryCarpet(rack) {
+  const p = people.find((q) => q.role === "packer" && !q.isLoader && !q.packErrand) || people.find((q) => q.role === "packer" && !q.isLoader);
+  if (!p) {
+    rack.packScheduled = false;
+    rack.dryTimer = 3.0;
+    return;
+  }
+  p.packErrand = true;
+  p.tasks.length = 0;
+  p.tasks.push(
+    T.walk(-5.0, -4.0),
+    T.walk(-5.0, 2.8),
+    T.walk(rack.x, 2.8),
+    T.walk(rack.x, rack.z - 0.5),
+    T.face(FACE.n),
+    T.anim("work", 1.5), // Take down dry carpet
+    T.call((q) => {
+      rack.carpetGroup.visible = false; // Rack is empty again
+      rack.occupied = false;
+      rack.packScheduled = false;
+      const c = carpetRoll(worldGroup, 0xd9c7a3, 0, 0, 0, 0, 0.22, 1.8);
+      q.carry = c;
+    }),
+    T.walk(rack.x, 2.8),
+    T.walk(-5.0, 2.8),
+    T.walk(-5.0, -4.0),
+    T.walk(-0.8, -4.0), // Packing table
+    T.face(FACE.n),
+    T.anim("work", 2.0),
+    T.walk(2.4, -4.0), // Film wrapping station
+    T.walk(2.4, -3.4),
+    T.face(FACE.n),
+    T.anim("work", 3.0), // Wrap with protective clear film
+    T.walk(1.4, -9.0), // Dispatch dock area (clean orders)
+    T.face(FACE.e),
+    T.anim("work", 1.5),
+    T.call((q) => {
+      if (q.carry) { worldGroup.remove(q.carry); q.carry = null; }
+      q.packErrand = false;
+    }),
     T.anim("idle", 2.0)
   );
+}
+
+function updateWorkshop(dt) {
+  // 1. Washing line conveyor & brushes
+  if (washerActive) {
+    washerProgress += dt * 0.16;
+    if (washerConveyorCarpet) {
+      washerConveyorCarpet.position.x = -2.2 + washerProgress * 3.8;
+    }
+    washerBrushes.forEach((b) => {
+      b.rotation.x += dt * 8;
+    });
+    if (washerProgress >= 1.0) {
+      washerActive = false;
+      if (washerConveyorCarpet) washerConveyorCarpet.position.x = 1.6;
+    }
+  }
+
+  // 2. Floor fan rotation
+  if (floorFanHub) {
+    floorFanHub.rotation.y += dt * 6.0;
+  }
+
+  // 3. Drying racks timer & Packer pickup
+  DRY_RACKS.forEach((rack) => {
+    if (rack.occupied && rack.dryTimer > 0) {
+      rack.dryTimer -= dt;
+      if (rack.dryTimer <= 0 && !rack.packScheduled) {
+        rack.packScheduled = true;
+        packerCollectDryCarpet(rack);
+      }
+    }
+  });
 }
 
 let peopleReady = false;
@@ -3622,50 +3997,63 @@ function spawnPeople() {
   peopleReady = true;
   PED_GRAPH = buildSidewalkGraph();
   const S = SKINS;
-  // 1. Reception: Front room is EXCLUSIVELY "Прием партии"
-  // Counter Spot 1: Прием партии
-  addPerson({ ...U.intakeM, x: -8.4, z: 0.3, rotY: 0, anim: "sit", skin: S[2] }).job = stationJob(G_RECEP, [
-    ST(-8.4, 0.3, FACE.n, "sit", 15, 35, 7),
-    ST(-6.4, 0.2, FACE.n, "talk", 4, 8, 8),
-    ST(-9.2, 2.6, FACE.s, "talk", 4, 8, 13),
-  ]);
-  // Counter Spot 2: Прием партии (у поддона)
-  addPerson({ ...U.intake, x: -4.4, z: 0.3, rotY: 0, anim: "sit", skin: S[1] }).job = stationJob(G_RECEP, [
-    ST(-4.4, 0.3, FACE.n, "sit", 15, 35, 9),
-    ST(-2.6, 0.2, FACE.n, "work", 5, 10, 10),
-    ST(-1.6, -1.2, FACE.e, "talk", 3, 6, 14),
-  ]);
-  // Spot 3: Прием партии (оформление по телефону/ПК у западной стены)
-  addPerson({ ...U.intake, recolor: { White: BRANDC.navy, Orange: BRANDC.green, Hair_Blond: 0x2b1d14 }, x: -11.2, z: 0.1, rotY: 0, anim: "sit", skin: S[3] }).job = stationJob(G_RECEP, [
-    ST(-11.2, 0.1, FACE.n, "sit", 20, 40, 12),
-  ]);
+  // 1. Intake hall: the measuring clerk (reacts to a customer's carpet), the desk clerk (registers the order)
+  //    and a third specialist between the scale and the pallets
+  const measurer = addPerson({ ...U.intakeM, x: INTAKE.tableN.x, z: INTAKE.tableN.z, rotY: FACE.s, anim: "work", skin: S[2] });
+  if (measurer) { measurer.job = intakeMeasureJob; measurer.tasks.push(T.anim("work", 2.0)); }
+  const deskSt = INTAKE_ST[3];
+  const deskClerk = addPerson({ ...U.intake, recolor: { White: BRANDC.navy, Orange: BRANDC.green, Hair_Blond: 0x2b1d14 }, x: deskSt.x, z: deskSt.z, rotY: FACE.n, anim: "sit", skin: S[3] });
+  if (deskClerk) { deskClerk.job = stationJob(G_INTAKE, [deskSt, INTAKE_ST[5], INTAKE_ST[1]]); deskSt.busy = deskClerk; deskClerk.lastStation = deskSt; deskClerk.tasks.push(T.anim("sit", 20)); }
+  const scaleSt = INTAKE_ST[2];
+  const weigher = addPerson({ ...U.intake, x: scaleSt.x, z: scaleSt.z, rotY: FACE.s, anim: "work", skin: S[1] });
+  if (weigher) { weigher.job = stationJob(G_INTAKE, [scaleSt, INTAKE_ST[4], INTAKE_ST[6], INTAKE_ST[1]]); scaleSt.busy = weigher; weigher.lastStation = scaleSt; weigher.tasks.push(T.anim("work", 5)); }
 
   // Customer who drives from home with a carpet
   customerRunner = addPerson({ ...casualLook(), x: 0, y: 0.09, z: 0, hidden: true, speed: 1.15 });
   customerCarpet = carpetRoll(worldGroup, 0xb8860b, 0, 0, 0, 0, 0.22, 1.8);
   customerCarpet.visible = false;
-  // 2. Workshop crew: washers on the wet side, packers on the dry side
+  // 2. Washers in the front hall (line, dryers, machines, centrifuge, wringer); packers on the dry side of the workshop
   WASH_ST.slice(0, 4).forEach((st, i) => {
     const w = addPerson({ ...U.washer, x: st.x, z: st.z, rotY: st.yaw, anim: "work", skin: S[i % 4] });
-    w.job = stationJob(G_SHOP, WASH_ST);
+    w.job = stationJob(G_WASH, WASH_ST);
     st.busy = w; w.lastStation = st;
     w.tasks.push(T.anim("work", 4 + i * 2));
   });
-  // Dedicated intake washer: fetches incoming carpet batches from "ПРИЕМ ПАРТИИ" to the washing line
-  const wIntake = addPerson({ ...U.washer, x: -7.0, z: -4.5, rotY: FACE.n, anim: "work", skin: S[0] });
+  // Dedicated runner: waits by the opening and carries each batch from the intake "На мойку" pallet to the line
+  const wIntake = addPerson({ ...U.washer, x: WASH_RUNNER.x, z: WASH_RUNNER.z, rotY: FACE.s, anim: "work", skin: S[0] });
   if (wIntake) {
     wIntake.job = washerIntakeJob;
     wIntake.tasks.push(T.anim("work", 2.0));
   }
   PACK_ST.slice(0, 3).forEach((st, i) => {
     const w = addPerson({ ...U.packer, x: st.x, z: st.z, rotY: st.yaw, anim: "work", skin: S[(i + 2) % 4] });
-    w.job = stationJob(G_SHOP, PACK_ST);
+    w.job = stationJob(G_PACK, PACK_ST);
     st.busy = w; w.lastStation = st;
     w.tasks.push(T.anim("work", 3 + i * 2));
   });
-  // 3. Drivers' room: two drivers between shifts — route board, lockers, cash drop, briefing table
-  addPerson({ ...U.driver, x: -20.9, z: -6.5, rotY: FACE.w, anim: "work", skin: S[2] }).job = stationJob(G_DRV, DRV_ST);
-  addPerson({ ...U.driver, recolor: { White: BRANDC.green, LightBlue: BRANDC.charcoal, Red_Dark: BRANDC.black }, x: -16.94, z: -4.94, rotY: Math.atan2(-1.06, -1.06), anim: "sit", skin: S[0] }).job = stationJob(G_DRV, DRV_ST);
+  // 3. Drivers' room: all 5 company van drivers are physically present here from frame 1
+  TRUCK_DRIVERS.length = 0;
+  DRIVER_INIT_SPOTS.forEach((spot, i) => {
+    const drv = addPerson({
+      ...U.driver,
+      x: spot.x,
+      z: spot.z,
+      rotY: spot.rotY,
+      anim: spot.anim,
+      skin: S[spot.skin % S.length],
+    });
+    if (drv) {
+      drv.driverIndex = i;
+      drv.initSpot = spot;
+      drv.tasks.push(T.anim(spot.anim, 9999));
+      TRUCK_DRIVERS.push(drv);
+      const truck = vehicles.find((v) => v.kind === "truck" && v.baseIndex === i);
+      if (truck) {
+        truck.driverP = drv;
+        drv.truck = truck;
+      }
+    }
+  });
   // 4. Managers: one at the desk (pricing queue), two at the meeting table (routes, cash)
   addPerson({ ...U.manager, x: -34.0, z: -8.9, rotY: FACE.n, anim: "sit", skin: S[1] }).job = stationJob(G_MGMT, MGMT_ST);
   addPerson({ ...U.managerW, x: -25.2, z: -6.5, rotY: FACE.w, anim: "talk" }).job = stationJob(G_MGMT, MGMT_ST);
@@ -3706,10 +4094,11 @@ function animate() {
   requestAnimationFrame(animate);
   const dt = Math.min(clock.getDelta(), 0.05);
 
-  // 1. Traffic: company trucks (with pickups), civilian cars, customer car
+  // 1. Traffic & Workshop: company trucks (with pickups), civilian cars, customer car, washing pipeline
   updateVehicles(dt, clock.elapsedTime);
   updateCustomerCar(dt, clock.elapsedTime);
   updatePeople(dt, clock.elapsedTime);
+  updateWorkshop(dt);
 
   // 2. Smooth Camera Lerp
   if (isAnimatingCamera) {
