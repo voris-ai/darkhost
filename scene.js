@@ -501,9 +501,9 @@ function addLaundryCart(x, z, rotY) {
 // ─── ДАРХОСТ CAMPUS: building 42×15m with six zones + service yard with docks ──
 // Lot sits between the west street (x=-46) and the west vertical street (x=12),
 // between street 1 (z=-26) and the main road (z=12.6).
-const CAMPUS = { x0: -38, x1: 4, zFront: 5, zBack: -10, wallH: 3.4 };
+const CAMPUS = { x0: -38, x1: 5.4, zFront: 5, zBack: -10, wallH: 3.4 };
 const YARD = { z0: -19.8, z1: -10 };
-const LOT = { x0: -39.8, x1: 5.8, z0: -19.8, z1: 6.4 };
+const LOT = { x0: -39.8, x1: 6.8, z0: -19.8, z1: 6.4 };
 const DOCK_BAYS = [{ x: -11 }, { x: -5 }, { x: 1 }];
 const DOCK_W = 3.2;
 
@@ -655,12 +655,14 @@ wallXDoor(-3, CAMPUS.x0, -22, -27, -25.6);
 
 // Zone name plates above each doorway (inside)
 label3d("ОПЕРАТОР · ПРИЁМ ЗАКАЗОВ", 4.6, 0.55, { x: -5, y: 2.75, z: CAMPUS.zFront - 0.14 }, Math.PI);
+label3d("ПРИЕМ ПАРТИИ", 2.8, 0.55, { x: -1.2, y: 2.75, z: CAMPUS.zFront - 0.14 }, Math.PI, { bg: "#52B369", fg: "#ffffff", size: 0.6 });
 label3d("ВЛАДЕЛЕЦ", 3.0, 0.55, { x: -30, y: 2.75, z: CAMPUS.zFront - 0.14 }, Math.PI);
 label3d("МОЙЩИК", 2.4, 0.55, { x: -7, y: 2.72, z: -2 - 0.12 }, Math.PI);
 label3d("УПАКОВЩИК", 2.8, 0.55, { x: 1.75, y: 2.72, z: -2 - 0.12 }, Math.PI);
 label3d("ВОДИТЕЛЬ · СМЕНА", 3.6, 0.5, { x: -18.7, y: 3.15, z: -3 - 0.1 }, Math.PI);
 label3d("МЕНЕДЖЕР", 3.0, 0.55, { x: -26.3, y: 2.75, z: -3 - 0.12 }, Math.PI);
 label3d("ОПЕРАТОР · МАРШРУТЫ", 4.2, 0.5, { x: -18, y: 2.75, z: -3 + 0.12 }, 0);
+label3d("ОПЕРАТОР 2 · ПРИЁМКА ПАРТИЙ", 4.2, 0.5, { x: -3.8, y: 2.5, z: -1.88 }, 0, { bg: "#033D53", fg: "#ffffff", size: 0.5 });
 
 // ── Interior: procedural fixtures now, poly.pizza furniture once the models load (buildInterior) ──
 const FLOOR_Y = 0.11;
@@ -898,6 +900,7 @@ function cardboardBox(x, z, y, size, rotY = 0) {
   g.rotation.y = rotY;
   worldGroup.add(g);
 }
+let intakeBatchRoll = null;
 function buildInterior() {
   const P = prop;
   // 1. Reception: long counter with terminals, staff chairs, lounge, water cooler, vending
@@ -907,12 +910,29 @@ function buildInterior() {
   P("desk", -11.2, 1.0, Math.PI, { h: 0.8 });
   P("screen", -11.2, 1.25, Math.PI, { y: FLOOR_Y + 0.8 });
   P("chair", -11.2, 0.1, 0);
-  P("sofa", 1.3, 3.5, Math.PI);
-  P("roundTable", 1.1, 1.5, 0);
-  P("plant", 3.3, 4.3, 0);
+
+  // Large Dedicated Batch Intake Zone («ПРИЕМ ПАРТИИ») at Operator 2
+  machinePlate("ПРИЁМ ПАРТИЙ КОВРОВ", 3.4, -1.2, 1.6, 2.75);
+  // Heavy-duty wooden Euro-pallets platform with safety hazard borders
+  worldGroup.add(createBox(2.4, 0.16, 1.8, M.warmOak, { x: -1.2, y: FLOOR_Y + 0.08, z: 1.6 }));
+  worldGroup.add(createBox(2.44, 0.06, 0.08, M_hazard, { x: -1.2, y: FLOOR_Y + 0.18, z: 2.52 }, false));
+  worldGroup.add(createBox(0.08, 0.06, 1.84, M_hazard, { x: -2.42, y: FLOOR_Y + 0.18, z: 1.6 }, false));
+  worldGroup.add(createBox(0.08, 0.06, 1.84, M_hazard, { x: 0.02, y: FLOOR_Y + 0.18, z: 1.6 }, false));
+  // Industrial platform weight scale & barcode scanner pillar
+  worldGroup.add(createBox(0.4, 1.1, 0.25, M.graphite, { x: -0.2, y: FLOOR_Y + 0.55, z: 2.4 }));
+  worldGroup.add(createBox(0.32, 0.22, 0.05, M.screenGlow, { x: -0.2, y: FLOOR_Y + 1.05, z: 2.54 }, false));
+  // Physical carpet rolls stored at the batch intake ("там он должен остаться реально там")
+  carpetRoll(worldGroup, 0x9b2c2c, -1.2, FLOOR_Y + 0.32, 1.15, 0, 0.22, 1.9); // bottom red carpet
+  carpetRoll(worldGroup, 0x1e4d6b, -1.2, FLOOR_Y + 0.32, 1.95, 0, 0.22, 1.9); // bottom blue carpet
+  intakeBatchRoll = carpetRoll(worldGroup, 0xb8860b, -1.2, FLOOR_Y + 0.68, 1.55, 0, 0.21, 1.8); // top active gold carpet
+
+  // Customer lounge area shifted east into the wider building extension
+  P("sofa", 2.8, 3.5, Math.PI);
+  P("roundTable", 2.6, 1.5, 0);
+  P("plant", 4.6, 4.3, 0);
   P("plant", -13.3, 4.3, 0.6);
-  P("cooler", 3.4, -1.4, -Math.PI / 2);
-  P("vending", 3.3, 0.5, -Math.PI / 2);
+  P("cooler", 4.8, -1.4, -Math.PI / 2);
+  P("vending", 4.8, 0.5, -Math.PI / 2);
   // 2. Packers' side: intake desks with bags/boxes, shelves with packed orders, trolley
   [-1.3, 0.2].forEach((x) => P("desk", x, -8.4, Math.PI, { h: 0.8 }));
   [[-1.5, -8.5], [-0.7, -8.3], [0.4, -8.5]].forEach(([x, z], i) => cardboardBox(x, z, FLOOR_Y + 0.8, 0.4, i * 0.4));
@@ -2059,10 +2079,12 @@ function updateDriver(v, dt, time) {
     v.speed = 0;
     setSignal(v, "hazard");
     const stop = v.stops[v.nextStop];
+    v.loadT = (v.loadT || 0) + dt;
     if (!v.loadStarted) {
       // The driver steps out, opens the doors and carries the carpet; fall back to a timer until characters are loaded
       v.loadStarted = true;
       v.loadDone = false;
+      v.loadT = 0;
       if (!startLoading(v, stop)) v.timer = 5;
     }
     if (!v.driverP) { v.timer -= dt; if (v.timer <= 0) v.loadDone = true; }
@@ -2080,7 +2102,16 @@ function updateDriver(v, dt, time) {
         const along = (o.root.position.x - lane.x) * laneT.x + (o.root.position.z - lane.z) * laneT.z;
         return d < 9 && along > -2 && along < PAST_DRIVEWAY + 2.5;
       });
-      if (!busy) {
+      // Next stop is the neighbouring dock (washers -> packers): stay in this bay until it is free, otherwise
+      // we would end up waiting in the lane right across its driveway and block its van from pulling out
+      const next = v.stops[(v.nextStop + 1) % v.stops.length];
+      const nextTaken = !!next.target.parkPoint && vehicles.some((o) => {
+        if (o === v || !o.stops.length || o.root.position.distanceTo(v.root.position) > 40) return false;
+        if (o.state === "reverse" || o.state === "exit") return true;
+        const oStop = o.stops[o.nextStop];
+        return oStop.target === next.target && (o.state !== "drive" || o.committed);
+      });
+      if (!busy && !nextTaken) {
         v.loadStarted = false;
         v.state = "exit";
         v.m = 0;
@@ -2557,8 +2588,8 @@ const U = {
   packer: { role: "packer", model: "worker", recolor: { Worker_Yellow: BRANDC.green, Grey: BRANDC.green, LightBrown: BRANDC.navy, Brown2: BRANDC.navy, Brown: BRANDC.navy, Worker_Vest: BRANDC.hiVis } },
   // водитель: green polo, navy trousers — routes, pickups, deliveries
   driver: { role: "driver", model: "casual", recolor: { White: BRANDC.green, LightBlue: BRANDC.navy, Red_Dark: BRANDC.black } },
-  // охранник: dark tactical security uniform (charcoal/navy/black) with badge — checkpoints, barrier, gate
-  guard: { role: "guard", model: "casual", recolor: { White: BRANDC.charcoal, LightBlue: BRANDC.navy, Red_Dark: BRANDC.black } },
+  // охранник: dark executive security suit with tie — checkpoints, barrier, gate
+  guard: { role: "guard", model: "bizman", recolor: { Suit: 0x111827, Tie: BRANDC.navy } },
   // оператор: navy blouse / navy suit + green tie — reception desk, new orders, dispatching drivers from the board
   operator: { role: "operator", model: "womanB", recolor: { White: BRANDC.navy, Orange: BRANDC.charcoal } },
   operatorM: { role: "operator", model: "bizman", recolor: { Suit: BRANDC.navy, Tie: BRANDC.green } },
@@ -3028,9 +3059,9 @@ function startLoading(v, stop) {
   } else {
     // Packers' dock: only collect the clean, packed carpet a packer brings out - nothing is unloaded here
     // If the packer gets pulled away to another dock meanwhile, the roll simply appears after a while so the van is never stuck
-    let showClean = null, waitFrom = 0;
-    p.tasks.push(...goDoor(), T.call(() => { showClean = bringOutAtDock(stop, clean, yawTo(rear, door) + Math.PI / 2); waitFrom = performance.now(); }));
-    p.tasks.push(T.wait(() => { if (!clean.visible && performance.now() - waitFrom > 25000) showClean(); return clean.visible; }));
+    let showClean = null;
+    p.tasks.push(...goDoor(), T.call(() => { showClean = bringOutAtDock(stop, clean, yawTo(rear, door) + Math.PI / 2); }));
+    p.tasks.push(T.wait(() => { if (!clean.visible && v.loadT > 45) showClean(); return clean.visible; }));
     p.tasks.push(...pickAtDoor(clean), ...goRear(), ...putInVan());
   }
   p.tasks.push(T.face(yawVan), T.call(() => { v.doorTarget = 0; }), T.anim("work", 1.2));
@@ -3039,10 +3070,16 @@ function startLoading(v, stop) {
   return true;
 }
 // A dock loader collects the dirty carpet from the dock and carries it to the washing line
+// Nearest yard packer to the dock door; one already carrying for another van is only taken when nobody else is free
+function freeLoaderFor(d) {
+  const byDist = people.filter((q) => q.isLoader).sort((a, b) => a.root.position.distanceTo(d) - b.root.position.distanceTo(d));
+  return byDist.find((q) => !q.dockErrand) || byDist[0];
+}
 function handOverAtDock(stop, carpet) {
-  const loader = people.filter((q) => q.isLoader).sort((a, b) => a.root.position.distanceTo(stop.target.doorPoint) - b.root.position.distanceTo(stop.target.doorPoint))[0];
-  if (!loader) { carpet.visible = false; return; }
   const d = stop.target.doorPoint;
+  const loader = freeLoaderFor(d);
+  if (!loader) { carpet.visible = false; return; }
+  loader.dockErrand = true;
   if (loader.lastStation && loader.lastStation.busy === loader) loader.lastStation.busy = null;
   loader.tasks.length = 0;
   // Whatever the loader was carrying is dropped, otherwise it would freeze in mid-air
@@ -3057,15 +3094,16 @@ function handOverAtDock(stop, carpet) {
   const way = d.x < -8 ? [[d.x, -9.0], [-10.5, -7.0]] : d.x < -2.5 ? [[d.x, -9.0], [-5.0, -7.0], [-10.5, -7.0]] : [[d.x, -9.3], [-1.3, -9.3], [-2.6, -8.0], [-5.0, -7.0], [-10.5, -7.0]];
   loader.tasks.push(...way.map(([x, z]) => T.walk(x, z)), T.face(FACE.n), T.anim("work", 1.2), T.call((q) => { if (q.carry) { q.carry.visible = false; worldGroup.remove(q.carry); } q.carry = null; }));
   const gapX = d.x < -5 ? -8.0 : -2.0; // pallet spot next to this bay
-  loader.tasks.push(...way.slice(0, -1).reverse().map(([x, z]) => T.walk(x, z)), T.walk(d.x, -10.7), T.walk(gapX, -10.7), T.walk(gapX, -11.6), T.face(FACE.s));
+  loader.tasks.push(...way.slice(0, -1).reverse().map(([x, z]) => T.walk(x, z)), T.walk(d.x, -10.7), T.walk(gapX, -10.7), T.walk(gapX, -11.6), T.face(FACE.s), T.call((q) => { q.dockErrand = false; }));
 }
 
 // A yard packer fetches the clean, packed carpet from the packers' rack and brings it out to the van
 function bringOutAtDock(stop, carpet, yaw) {
   const d = stop.target.doorPoint;
   const show = () => { carpet.position.set(d.x + 0.6, 0.36, d.z); carpet.rotation.set(0, yaw, 0); carpet.visible = true; };
-  const loader = people.filter((q) => q.isLoader).sort((a, b) => a.root.position.distanceTo(d) - b.root.position.distanceTo(d))[0];
+  const loader = freeLoaderFor(d);
   if (!loader) { show(); return show; }
+  loader.dockErrand = true;
   if (loader.lastStation && loader.lastStation.busy === loader) loader.lastStation.busy = null;
   loader.tasks.length = 0;
   if (loader.carry) { loader.carry.visible = false; if (loader.carry.isBag) worldGroup.remove(loader.carry); loader.carry = null; }
@@ -3079,8 +3117,48 @@ function bringOutAtDock(stop, carpet, yaw) {
   loader.tasks.push(...way.slice(0, -1).reverse().map(([x, z]) => T.walk(x, z)), T.walk(d.x, d.z - 1.6), T.face(0), T.anim("work", 1.0));
   loader.tasks.push(T.call((q) => { q.carry = null; bag.visible = false; worldGroup.remove(bag); show(); }));
   const gapX = d.x < -5 ? -8.0 : -2.0;
-  loader.tasks.push(T.walk(d.x, -10.7), T.walk(gapX, -10.7), T.walk(gapX, -11.6), T.face(FACE.s));
+  loader.tasks.push(T.walk(d.x, -10.7), T.walk(gapX, -10.7), T.walk(gapX, -11.6), T.face(FACE.s), T.call((q) => { q.dockErrand = false; }));
   return show;
+}
+
+// Washer dedicated to fetching incoming batches from "ПРИЕМ ПАРТИИ" to the washing line
+function washerIntakeJob(w) {
+  w.tasks.push(
+    T.walk(-7.0, -4.5),
+    T.walk(-7.0, -2.0),
+    T.walk(-3.5, 0.6),
+    T.walk(-1.2, 2.6),
+    T.face(FACE.s),
+    T.anim("work", 1.6),
+    T.call((q) => {
+      if (intakeBatchRoll) {
+        intakeBatchRoll.visible = false;
+        const c = intakeBatchRoll.clone();
+        c.visible = true;
+        worldGroup.add(c);
+        q.carry = c;
+      }
+    }),
+    T.walk(-3.5, 0.6),
+    T.walk(-7.0, -2.0),
+    T.walk(-7.0, -4.5),
+    T.walk(-10.8, -4.2),
+    T.face(FACE.n),
+    T.anim("work", 1.4),
+    T.call((q) => {
+      if (q.carry) {
+        worldGroup.remove(q.carry);
+        q.carry = null;
+      }
+    }),
+    T.anim("work", 4.5),
+    T.call(() => {
+      setTimeout(() => {
+        if (intakeBatchRoll) intakeBatchRoll.visible = true;
+      }, 6000);
+    }),
+    T.anim("idle", 2.0)
+  );
 }
 
 function spawnPeople() {
@@ -3100,12 +3178,18 @@ function spawnPeople() {
     c.tasks.push(T.anim("idle", i * 12));
   }
   // 2. Workshop crew: washers on the wet side, packers on the dry side
-  WASH_ST.slice(0, 5).forEach((st, i) => {
+  WASH_ST.slice(0, 4).forEach((st, i) => {
     const w = addPerson({ ...U.washer, x: st.x, z: st.z, rotY: st.yaw, anim: "work", skin: S[i % 4] });
     w.job = stationJob(G_SHOP, WASH_ST);
     st.busy = w; w.lastStation = st;
     w.tasks.push(T.anim("work", 4 + i * 2));
   });
+  // Dedicated intake washer: fetches incoming carpet batches from "ПРИЕМ ПАРТИИ" to the washing line
+  const wIntake = addPerson({ ...U.washer, x: -7.0, z: -4.5, rotY: FACE.n, anim: "work", skin: S[0] });
+  if (wIntake) {
+    wIntake.job = washerIntakeJob;
+    wIntake.tasks.push(T.anim("work", 2.0));
+  }
   PACK_ST.slice(0, 3).forEach((st, i) => {
     const w = addPerson({ ...U.packer, x: st.x, z: st.z, rotY: st.yaw, anim: "work", skin: S[(i + 2) % 4] });
     w.job = stationJob(G_SHOP, PACK_ST);
