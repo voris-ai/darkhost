@@ -8,7 +8,7 @@ const ZONES_DATA = [
     id: "operator",
     category: "operator",
     title: "Оператор",
-    subtitle: "Приёмный пункт и диспетчерская · роль receptionist",
+    subtitle: "Приёмный пункт и оформление заказов · роль receptionist",
     description:
       "Оператор оформляет заказ на стойке: заводит клиента, выбирает «Курьер заберёт» или «Клиент принесёт сам», ставит дату выдачи. С доски цеха отправляет водителя на забор и выдаёт готовые заказы. Цены, состав заказа и наличные при выдаче — только менеджер или владелец.",
     crmHref: "../web",
@@ -16,14 +16,33 @@ const ZONES_DATA = [
     features: [
       "Новый заказ и карточка клиента, заявка на скидку владельцу",
       "Курьер или самовывоз, перенос даты выдачи",
-      "Доска цеха: отправить водителя на забор",
       "Звонки клиентам, SMS-статусы, перенос сроков",
     ],
-    connectedModules: ["Заказы", "Новый заказ", "Клиенты", "Доска цеха", "Выдача", "Календарь", "SMS клиентам"],
-    cameraTarget: new THREE.Vector3(-6.4, 1.25, 1.4),
-    cameraPosition: new THREE.Vector3(-2.8, 2.5, 5.5),
-    hotspotPosition: new THREE.Vector3(-6.4, 4.3, 1.4),
+    connectedModules: ["Заказы", "Новый заказ", "Клиенты", "Выдача", "Календарь", "SMS клиентам"],
+    cameraTarget: new THREE.Vector3(-8.4, 1.25, 1.4),
+    cameraPosition: new THREE.Vector3(-5.0, 2.5, 5.5),
+    hotspotPosition: new THREE.Vector3(-8.4, 4.3, 1.4),
     badgeText: "Оператор",
+  },
+  {
+    id: "intake",
+    category: "intake",
+    title: "Прием партии",
+    subtitle: "Зона приёмки и сортировки партий ковров",
+    description:
+      "Специалист приёма партии принимает ковры от клиентов и водителей доставки, взвешивает, маркирует штрих-кодами и размещает на поддонах. Отсюда мойщики забирают ковры в цех на автоматическую стирку.",
+    crmHref: "../web",
+    crmActionLabel: "Открыть приёмку",
+    features: [
+      "Приём партий ковров от клиентов и водителей",
+      "Взвешивание, маркировка штрих-кодами, замер площади",
+      "Размещение на поддонах для передачи мойщикам в цех",
+    ],
+    connectedModules: ["Приёмка партий", "Доска цеха", "Склад приёма", "Партии"],
+    cameraTarget: new THREE.Vector3(-1.8, 1.25, 1.6),
+    cameraPosition: new THREE.Vector3(1.2, 2.6, 5.2),
+    hotspotPosition: new THREE.Vector3(-1.8, 4.3, 1.6),
+    badgeText: "Прием партии",
   },
   {
     id: "washer",
@@ -654,15 +673,16 @@ worldGroup.add(createBox(0.1, 2.9, 0.12, M.graphite, { x: -14.7, y: 1.45, z: -3 
 wallXDoor(-3, CAMPUS.x0, -22, -27, -25.6);
 
 // Zone name plates above each doorway (inside)
-label3d("ОПЕРАТОР · ПРИЁМ ЗАКАЗОВ", 4.6, 0.55, { x: -5, y: 2.75, z: CAMPUS.zFront - 0.14 }, Math.PI);
-label3d("ПРИЕМ ПАРТИИ", 2.8, 0.55, { x: -1.2, y: 2.75, z: CAMPUS.zFront - 0.14 }, Math.PI, { bg: "#52B369", fg: "#ffffff", size: 0.6 });
+label3d("ОПЕРАТОР", 3.2, 0.55, { x: -7.5, y: 2.75, z: CAMPUS.zFront - 0.14 }, Math.PI);
+label3d("ПРИЕМ ПАРТИИ", 3.2, 0.55, { x: -2.0, y: 2.75, z: CAMPUS.zFront - 0.14 }, Math.PI, { bg: "#52B369", fg: "#ffffff", size: 0.6 });
 label3d("ВЛАДЕЛЕЦ", 3.0, 0.55, { x: -30, y: 2.75, z: CAMPUS.zFront - 0.14 }, Math.PI);
 label3d("МОЙЩИК", 2.4, 0.55, { x: -7, y: 2.72, z: -2 - 0.12 }, Math.PI);
 label3d("УПАКОВЩИК", 2.8, 0.55, { x: 1.75, y: 2.72, z: -2 - 0.12 }, Math.PI);
 label3d("ВОДИТЕЛЬ · СМЕНА", 3.6, 0.5, { x: -18.7, y: 3.15, z: -3 - 0.1 }, Math.PI);
 label3d("МЕНЕДЖЕР", 3.0, 0.55, { x: -26.3, y: 2.75, z: -3 - 0.12 }, Math.PI);
 label3d("ОПЕРАТОР · МАРШРУТЫ", 4.2, 0.5, { x: -18, y: 2.75, z: -3 + 0.12 }, 0);
-label3d("ОПЕРАТОР 2 · ПРИЁМКА ПАРТИЙ", 4.2, 0.5, { x: -3.8, y: 2.5, z: -1.88 }, 0, { bg: "#033D53", fg: "#ffffff", size: 0.5 });
+label3d("ПРИЕМ ПАРТИИ", 3.2, 0.45, { x: -3.8, y: 2.5, z: -1.88 }, 0, { bg: "#52B369", fg: "#ffffff", size: 0.5 });
+label3d("ОПЕРАТОР", 2.8, 0.45, { x: -8.4, y: 2.5, z: -1.88 }, 0, { bg: "#033D53", fg: "#ffffff", size: 0.5 });
 
 // ── Interior: procedural fixtures now, poly.pizza furniture once the models load (buildInterior) ──
 const FLOOR_Y = 0.11;
@@ -2580,7 +2600,7 @@ const BRANDC = { navy: 0x033d53, green: 0x52b369, white: 0xf4f4f2, hiVis: 0xd4ff
 const SKINS = [0xf1c7a8, 0xd9a577, 0xb97a56, 0x8d5a3b];
 // Uniforms follow the six real CRM roles (staff_users.role): owner, manager, receptionist («оператор»),
 // driver, washer, packer. Each staff member also wears a floating role badge (see roleBadge).
-const ROLE_LABEL = { owner: "Владелец", manager: "Менеджер", operator: "Оператор", driver: "Водитель", washer: "Мойщик", packer: "Упаковщик", guard: "Охранник" };
+const ROLE_LABEL = { owner: "Владелец", manager: "Менеджер", operator: "Оператор", intake: "Прием партии", driver: "Водитель", washer: "Мойщик", packer: "Упаковщик", guard: "Охранник" };
 const U = {
   // мойщик: navy overall, green vest — works the washing line, centrifuge, dryers, washing machines
   washer: { role: "washer", model: "worker", recolor: { Worker_Yellow: BRANDC.navy, Grey: BRANDC.navy, LightBrown: BRANDC.charcoal, Brown2: BRANDC.charcoal, Brown: BRANDC.charcoal, Worker_Vest: BRANDC.green } },
@@ -2593,6 +2613,9 @@ const U = {
   // оператор: navy blouse / navy suit + green tie — reception desk, new orders, dispatching drivers from the board
   operator: { role: "operator", model: "womanB", recolor: { White: BRANDC.navy, Orange: BRANDC.charcoal } },
   operatorM: { role: "operator", model: "bizman", recolor: { Suit: BRANDC.navy, Tie: BRANDC.green } },
+  // прием партии: spot 2 at the batch intake pallet
+  intake: { role: "intake", model: "womanB", recolor: { White: BRANDC.navy, Orange: BRANDC.green } },
+  intakeM: { role: "intake", model: "bizman", recolor: { Suit: BRANDC.navy, Tie: BRANDC.green } },
   // менеджер: pricing, routes, cash reconciliation, reports
   manager: { role: "manager", model: "bizman", recolor: {} },
   managerW: { role: "manager", model: "womanC", recolor: { LimeGreen: BRANDC.navy, Gold: BRANDC.green } },
@@ -2603,22 +2626,31 @@ const U = {
 const _badgeTex = {};
 function roleBadge(role) {
   if (!_badgeTex[role]) {
-    _badgeTex[role] = makeCanvasTexture(512, 128, (ctx, cw, ch) => {
-      ctx.clearRect(0, 0, cw, ch);
-      ctx.fillStyle = "#033D53";
-      const r = ch / 2;
-      ctx.beginPath();
-      ctx.moveTo(r, 0); ctx.lineTo(cw - r, 0); ctx.arc(cw - r, r, r, -Math.PI / 2, Math.PI / 2); ctx.lineTo(r, ch); ctx.arc(r, r, r, Math.PI / 2, -Math.PI / 2);
-      ctx.fill();
-      ctx.fillStyle = "#ffffff";
-      ctx.font = "700 64px Inter, Arial, sans-serif";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText(ROLE_LABEL[role] || role, cw / 2, ch / 2 + 4);
-    });
+    const text = ROLE_LABEL[role] || role;
+    const len = text.length;
+    const cw = len > 8 ? 640 : 512;
+    const ch = 128;
+    _badgeTex[role] = {
+      w: len > 8 ? 1.38 : 1.1,
+      map: makeCanvasTexture(cw, ch, (ctx, w, h) => {
+        ctx.clearRect(0, 0, w, h);
+        ctx.fillStyle = "#033D53";
+        const r = h / 2;
+        ctx.beginPath();
+        ctx.moveTo(r, 0); ctx.lineTo(w - r, 0); ctx.arc(w - r, r, r, -Math.PI / 2, Math.PI / 2); ctx.lineTo(r, h); ctx.arc(r, r, r, Math.PI / 2, -Math.PI / 2);
+        ctx.fill();
+        ctx.fillStyle = "#ffffff";
+        const fs = len > 10 ? 52 : len > 8 ? 58 : 64;
+        ctx.font = `700 ${fs}px Inter, Arial, sans-serif`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(text, w / 2, h / 2 + 4);
+      }),
+    };
   }
-  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: _badgeTex[role], transparent: true, depthWrite: false }));
-  sp.scale.set(1.1, 0.275, 1);
+  const info = _badgeTex[role];
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: info.map, transparent: true, depthWrite: false }));
+  sp.scale.set(info.w, 0.275, 1);
   sp.position.set(0, CHAR_H + 0.28, 0);
   sp.renderOrder = 5;
   return sp;
@@ -3164,11 +3196,23 @@ function washerIntakeJob(w) {
 function spawnPeople() {
   PED_GRAPH = buildSidewalkGraph();
   const S = SKINS;
-  // 1. Reception staff
-  // Operators (receptionist role): create orders and customers at the desk, hand orders out
-  addPerson({ ...U.operator, x: -8.4, z: 0.3, rotY: 0, anim: "sit" }).job = stationJob(G_RECEP, RECEP_STAFF_ST);
-  addPerson({ ...U.operatorM, x: -4.4, z: 0.3, rotY: 0, anim: "sit", skin: S[1] }).job = stationJob(G_RECEP, RECEP_STAFF_ST);
-  addPerson({ ...U.operator, recolor: { White: BRANDC.navy, Orange: BRANDC.charcoal, Hair_Blond: 0x2b1d14 }, x: -11.2, z: 0.1, rotY: 0, anim: "sit", skin: S[3] }).job = stationJob(G_RECEP, RECEP_STAFF_ST);
+  // 1. Reception staff: Desk 1 is "Оператор", Desk 2 is "Прием партии"
+  // Spot 1: Оператор (оформление заказов на стойке)
+  addPerson({ ...U.operator, x: -8.4, z: 0.3, rotY: 0, anim: "sit" }).job = stationJob(G_RECEP, [
+    ST(-8.4, 0.3, FACE.n, "sit", 15, 35, 7),
+    ST(-6.4, 0.2, FACE.n, "talk", 4, 8, 8),
+    ST(-9.2, 2.6, FACE.s, "talk", 4, 8, 13),
+  ]);
+  // Spot 2: Прием партии (приёмка партий ковров у поддона)
+  addPerson({ ...U.intake, x: -4.4, z: 0.3, rotY: 0, anim: "sit", skin: S[1] }).job = stationJob(G_RECEP, [
+    ST(-4.4, 0.3, FACE.n, "sit", 15, 35, 9),
+    ST(-2.6, 0.2, FACE.n, "work", 5, 10, 10),
+    ST(-1.6, -1.2, FACE.e, "talk", 3, 6, 14),
+  ]);
+  // Spot 3: Оператор звонков / заказов у западной стены
+  addPerson({ ...U.operator, recolor: { White: BRANDC.navy, Orange: BRANDC.charcoal, Hair_Blond: 0x2b1d14 }, x: -11.2, z: 0.1, rotY: 0, anim: "sit", skin: S[3] }).job = stationJob(G_RECEP, [
+    ST(-11.2, 0.1, FACE.n, "sit", 20, 40, 12),
+  ]);
   // Reception customers: come in to place an order, ask about one or pay, sit a while, leave — carpets go through the drivers and the docks
   const counterVisits = [ST(-6.6, 2.6, FACE.s, "talk", 5, 9, 2), ST(-4.2, 2.6, FACE.s, "talk", 4, 8, 3), ST(1.0, 2.2, FACE.s, "idle", 5, 10, 5)];
   for (let i = 0; i < 3; i++) {
