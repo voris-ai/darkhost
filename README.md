@@ -4,9 +4,11 @@ Interactive 3D map of the Darkhost CRM enterprise (carpet cleaning): reception, 
 
 ## Online
 
-**Live demo:** https://voris-ai.github.io/darkhost/
+**Live demo (Vercel):** https://darkhost-3d-showroom.vercel.app/
 
-Permanent 24/7 cloud hosting via GitHub Pages. Works on any device without local server.
+GitHub Pages mirror: https://voris-ai.github.io/darkhost/
+
+Deploy: `vercel deploy --prod` from this folder (static build, see vercel.json / .vercelignore). Works on any device without local server.
 
 ## Run
 
