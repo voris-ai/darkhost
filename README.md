@@ -4,7 +4,7 @@ Interactive 3D map of the Darkhost CRM enterprise (carpet cleaning): reception, 
 
 ## Online
 
-**Live demo:** https://voris-ai.github.io/darkhost-3d-showroom/
+**Live demo:** https://voris-ai.github.io/darkhost/
 
 Permanent 24/7 cloud hosting via GitHub Pages. Works on any device without local server.
 
