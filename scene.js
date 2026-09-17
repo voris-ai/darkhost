@@ -997,6 +997,13 @@ worldGroup.add(createBox(0.12, 1.7, YARD.z1 - YARD.z0, M.fenceSteel, { x: LOT.x1
 worldGroup.add(createBox(0.35, 1.05, 0.35, M.signNavy, { x: -24.3, y: 0.52, z: YARD.z0 + 0.6 }));
 worldGroup.add(createBox(4.6, 0.12, 0.05, M.barrierArm, { x: -22.0, y: 0.95, z: YARD.z0 + 0.6 }));
 worldGroup.add(createBox(0.28, 1.15, 0.28, M.graphite, { x: -19.7, y: 0.58, z: YARD.z0 + 1.2 }));
+// Security checkpoint booth (КПП охраны)
+worldGroup.add(createBox(1.9, 2.6, 1.9, M.graphite, { x: -26.3, y: 1.3, z: YARD.z0 + 1.2 }));
+worldGroup.add(createBox(1.6, 1.1, 0.05, M.glassCyan, { x: -26.3, y: 1.4, z: YARD.z0 + 2.16 }, false));
+worldGroup.add(createBox(0.05, 1.1, 1.5, M.glassCyan, { x: -25.34, y: 1.4, z: YARD.z0 + 1.2 }, false));
+worldGroup.add(createBox(2.3, 0.12, 2.3, M.brandNavy, { x: -26.3, y: 2.66, z: YARD.z0 + 1.2 }, false));
+worldGroup.add(createBox(2.3, 0.04, 2.3, M.brandGreen, { x: -26.3, y: 2.74, z: YARD.z0 + 1.2 }, false));
+label3d("КПП · ОХРАНА", 1.5, 0.28, { x: -26.3, y: 2.32, z: YARD.z0 + 2.17 }, 0, { bg: "#033D53", size: 0.45 });
 // Light poles and planters
 function addParkingLightPole(x, z) {
   const g = new THREE.Group();
@@ -1748,19 +1755,42 @@ const S1 = STREET_Z[0];
 const W = WEST_X;
 const P = (x, z) => ({ x, z });
 // Every loop passes the campus docks on street 1 heading east (docks on the right).
-// Stops run in loop order and repeat: pickup at a house → dock (unload dirty, load clean) → deliver.
+// Docks 1-2 (x=-11, -5) open onto the washers' hall, dock 3 (x=1) onto the packers' side.
+// Stops run in loop order and repeat: pickup at a house -> washer dock (hand the dirty carpet in)
+// -> packer dock (collect the clean, packed one) -> deliver. A van never unloads at the packers'
+// dock and never picks up at a washers' dock.
+const WASH_DOCKS = [0, 1];
+const PACK_DOCK = 2;
 const TRUCK_ROUTES = [
   {
     plate: "0101 DH 01",
     loop: [P(V[1], MAIN), P(W, MAIN), P(W, S1), P(V[1], S1)],
     start: 0.02,
-    stops: [{ house: 2, kind: "pickup" }, { dock: 0, kind: "dock" }, { house: 12, kind: "deliver" }, { house: 3, kind: "pickup" }, { dock: 0, kind: "dock" }, { house: 13, kind: "deliver" }],
+    stops: [
+      { house: 2, kind: "pickup" },
+      { dock: WASH_DOCKS[0], kind: "unload" },
+      { dock: PACK_DOCK, kind: "collect" },
+      { house: 12, kind: "deliver" },
+      { house: 3, kind: "pickup" },
+      { dock: WASH_DOCKS[0], kind: "unload" },
+      { dock: PACK_DOCK, kind: "collect" },
+      { house: 13, kind: "deliver" },
+    ],
   },
   {
     plate: "0102 DH 01",
     loop: [P(V[2], MAIN), P(W, MAIN), P(W, S1), P(V[2], S1)],
     start: 0.5,
-    stops: [{ house: 7, kind: "pickup" }, { dock: 1, kind: "dock" }, { house: 17, kind: "deliver" }, { house: 8, kind: "pickup" }, { dock: 1, kind: "dock" }, { house: 16, kind: "deliver" }],
+    stops: [
+      { house: 7, kind: "pickup" },
+      { dock: WASH_DOCKS[1], kind: "unload" },
+      { dock: PACK_DOCK, kind: "collect" },
+      { house: 17, kind: "deliver" },
+      { house: 8, kind: "pickup" },
+      { dock: WASH_DOCKS[1], kind: "unload" },
+      { dock: PACK_DOCK, kind: "collect" },
+      { house: 16, kind: "deliver" },
+    ],
   },
   {
     plate: "0103 DH 01",
@@ -1768,10 +1798,12 @@ const TRUCK_ROUTES = [
     start: 0.2,
     stops: [
       { house: 4, kind: "pickup" },
-      { dock: 2, kind: "dock" },
+      { dock: WASH_DOCKS[0], kind: "unload" },
+      { dock: PACK_DOCK, kind: "collect" },
       { house: 10, kind: "deliver" },
       { house: 1, kind: "pickup" },
-      { dock: 2, kind: "dock" },
+      { dock: WASH_DOCKS[1], kind: "unload" },
+      { dock: PACK_DOCK, kind: "collect" },
       { house: 15, kind: "deliver" },
     ],
   },
@@ -1786,9 +1818,9 @@ const CIVIL_ROUTES = [
   { kind: "police", loop: [P(W, MAIN), P(V[2], MAIN), P(V[2], S1), P(W, S1)], start: 0.1, maxSpeed: 6.5 },
   { kind: "muscle", loop: [{ x: V[0], z: MAIN }, { x: V[2], z: MAIN }, { x: V[2], z: S1 }, { x: V[0], z: S1 }], start: 0.6, maxSpeed: 6 },
   // More cars on different loops (both directions) so every block carries traffic
-  { kind: "muscle", loop: [P(W, S1), P(V[2], S1), P(V[2], MAIN), P(W, MAIN)], start: 0.35, maxSpeed: 6.2 },
+  { kind: "sport", loop: [P(W, S1), P(V[2], S1), P(V[2], MAIN), P(W, MAIN)], start: 0.35, maxSpeed: 7.2 },
   { kind: "muscle", loop: [P(V[1], S1), P(V[0], S1), P(V[0], MAIN), P(V[1], MAIN)], start: 0.55, maxSpeed: 5.8 },
-  { kind: "police", loop: [P(V[2], MAIN), P(V[1], MAIN), P(V[1], S1), P(V[2], S1)], start: 0.7, maxSpeed: 6.4 },
+  { kind: "sport", loop: [P(V[2], MAIN), P(V[1], MAIN), P(V[1], S1), P(V[2], S1)], start: 0.7, maxSpeed: 7.5 },
   { kind: "muscle", loop: [P(V[0], S1), P(V[2], S1), P(V[2], MAIN), P(V[0], MAIN)], start: 0.25, maxSpeed: 6.0 },
 ];
 
@@ -1860,7 +1892,7 @@ function obstacleAhead(v, range = 16) {
       if (dot < -0.5) continue; // oncoming lane
     }
     // Leave room behind a van that is about to park or is manoeuvring
-    const extra = o.state !== "drive" || o.approaching ? 9 : 0;
+    const extra = o.state !== "drive" || o.approaching ? 5 : 0;
     if (!best || along < best.along) best = { along, speed: o.speed, extra };
   }
   if (!best) return null;
@@ -1868,7 +1900,7 @@ function obstacleAhead(v, range = 16) {
 }
 
 // Any vehicle behind us in our lane that would be hit while reversing:
-// moving traffic within `range`, or anything (even stopped) within 8 m.
+// moving traffic within `range`, or anything right on our bumper (< 2.2 m).
 // A car queued further back has stopped *for us* — waiting for it would deadlock.
 function vehicleBehind(v, range) {
   _fwd.set(0, 0, 1).applyQuaternion(v.root.quaternion);
@@ -1877,8 +1909,8 @@ function vehicleBehind(v, range) {
     _d.subVectors(o.root.position, v.root.position);
     const along = _d.dot(_fwd);
     const lateral = Math.abs(_fwd.x * _d.z - _fwd.z * _d.x);
-    if (!(along < 0 && lateral < 3.5)) return false;
-    return along > -8 || (o.speed > 0.5 && along > -range);
+    if (!(along < 0 && lateral < 3.2)) return false;
+    return along > -2.2 || (o.speed >= 0.4 && along > -range);
   });
 }
 
@@ -1941,9 +1973,10 @@ function updateDriver(v, dt, time) {
       // Holding point well before the driveway (outside every other dock's manoeuvring area):
       // wait here while another van is committed to / busy at the docks, or traffic is right behind us
       if (!v.committed) {
-        const holdS = (stop.s - HOLD_BACK + v.length) % v.length;
+        let holdS = (stop.s - HOLD_BACK + v.length) % v.length;
         let distHold = (holdS - v.s + v.length) % v.length;
-        if (distHold > v.length - HOLD_BACK - 1) distHold = 0; // already past the hold point
+        // Already past the hold point (e.g. just pulled out of the neighbouring dock): hold right here
+        if (distHold > v.length - HOLD_BACK - 1) { distHold = 0; holdS = v.s; }
         if (distHold < brake) target = Math.max(0.8, v.maxSpeed * (distHold / brake));
         if (distHold < 0.3 || v.holding) {
           // Only a van using the SAME driveway (parked there or committed to it) or one that is
@@ -2018,7 +2051,7 @@ function updateDriver(v, dt, time) {
     if (v.m >= v.curveLen - 0.01) {
       v.state = "load";
       const stop = v.stops[v.nextStop];
-      v.loadDur = stop.kind === "dock" ? 6.5 : 4.2;
+      v.loadDur = stop.kind === "pickup" || stop.kind === "deliver" ? 4.2 : 6.5;
       v.timer = v.loadDur;
       v.speed = 0;
     }
@@ -2037,10 +2070,15 @@ function updateDriver(v, dt, time) {
       // Wait until the lane by the driveway is clear before pulling out (the routine ran once; do not restart it)
       // Moving traffic near the driveway blocks us; a car queued (stopped) behind does not
       const lane = v.path.getPointAt(stop.laneS / v.length);
+      const laneT = v.path.getTangentAt(stop.laneS / v.length);
       const busy = vehicles.some((o) => {
         if (o === v) return false;
         const d = o.root.position.distanceTo(lane);
-        return o.speed > 0.5 ? d < 16 : d < 7 && !o.holding;
+        if (o.speed > 0.5) return d < 16;
+        // A stopped vehicle (queued behind us, or a van holding for the next dock) only blocks
+        // when it stands in the stretch of lane we sweep while pulling out
+        const along = (o.root.position.x - lane.x) * laneT.x + (o.root.position.z - lane.z) * laneT.z;
+        return d < 9 && along > -2 && along < PAST_DRIVEWAY + 2.5;
       });
       if (!busy) {
         v.loadStarted = false;
@@ -2116,7 +2154,7 @@ function setupVehicles() {
     addSteering(truck);
     truck.stops = r.stops
       .map((st) => {
-        const target = st.kind === "dock" ? DOCK_TARGETS[st.dock] : HOUSE_LOTS[st.house];
+        const target = st.dock !== undefined ? DOCK_TARGETS[st.dock] : HOUSE_LOTS[st.house];
         if (!target) return null;
         const near = nearestS(truck.path, truck.length, new THREE.Vector3(target.drivewayX, 0, target.roadZ));
         if (near.d > 4) {
@@ -2140,7 +2178,7 @@ function setupVehicles() {
 
   // Residents' cars stand in their own driveways, and only at houses no van ever visits:
   // the street-side parking lane stays empty so a reversing van never sweeps through a parked car.
-  const parkedKinds = ["muscle", "police", "muscle", "police", "muscle"];
+  const parkedKinds = ["muscle", "sport", "police", "sport", "muscle"];
   const served = new Set(TRUCK_ROUTES.flatMap((r) => r.stops.filter((st) => st.house != null).map((st) => st.house)));
   let pk = 0;
   HOUSE_LOTS.forEach((lot, i) => {
@@ -2153,8 +2191,8 @@ function setupVehicles() {
     worldGroup.add(v.root);
   });
 
-  // Customer cars in the campus yard stalls (nose toward the building)
-  [["muscle", -37], ["police", -31], ["muscle", -25], ["muscle", -19]].forEach(([kind, x]) => {
+  // Customer / VIP cars in the campus yard stalls (nose toward the building)
+  [["sport", -37], ["police", -31], ["muscle", -25], ["sport", -19]].forEach(([kind, x]) => {
     const v = spawnVehicle(kind);
     v.root.position.set(x, ROAD_TOP, YARD.z1 - 3.0);
     v.root.lookAt(x, ROAD_TOP, YARD.z1);
@@ -2511,7 +2549,7 @@ const BRANDC = { navy: 0x033d53, green: 0x52b369, white: 0xf4f4f2, hiVis: 0xd4ff
 const SKINS = [0xf1c7a8, 0xd9a577, 0xb97a56, 0x8d5a3b];
 // Uniforms follow the six real CRM roles (staff_users.role): owner, manager, receptionist («оператор»),
 // driver, washer, packer. Each staff member also wears a floating role badge (see roleBadge).
-const ROLE_LABEL = { owner: "Владелец", manager: "Менеджер", operator: "Оператор", driver: "Водитель", washer: "Мойщик", packer: "Упаковщик" };
+const ROLE_LABEL = { owner: "Владелец", manager: "Менеджер", operator: "Оператор", driver: "Водитель", washer: "Мойщик", packer: "Упаковщик", guard: "Охранник" };
 const U = {
   // мойщик: navy overall, green vest — works the washing line, centrifuge, dryers, washing machines
   washer: { role: "washer", model: "worker", recolor: { Worker_Yellow: BRANDC.navy, Grey: BRANDC.navy, LightBrown: BRANDC.charcoal, Brown2: BRANDC.charcoal, Brown: BRANDC.charcoal, Worker_Vest: BRANDC.green } },
@@ -2519,6 +2557,8 @@ const U = {
   packer: { role: "packer", model: "worker", recolor: { Worker_Yellow: BRANDC.green, Grey: BRANDC.green, LightBrown: BRANDC.navy, Brown2: BRANDC.navy, Brown: BRANDC.navy, Worker_Vest: BRANDC.hiVis } },
   // водитель: green polo, navy trousers — routes, pickups, deliveries
   driver: { role: "driver", model: "casual", recolor: { White: BRANDC.green, LightBlue: BRANDC.navy, Red_Dark: BRANDC.black } },
+  // охранник: dark tactical security uniform (charcoal/navy/black) with badge — checkpoints, barrier, gate
+  guard: { role: "guard", model: "casual", recolor: { White: BRANDC.charcoal, LightBlue: BRANDC.navy, Red_Dark: BRANDC.black } },
   // оператор: navy blouse / navy suit + green tie — reception desk, new orders, dispatching drivers from the board
   operator: { role: "operator", model: "womanB", recolor: { White: BRANDC.navy, Orange: BRANDC.charcoal } },
   operatorM: { role: "operator", model: "bizman", recolor: { Suit: BRANDC.navy, Tie: BRANDC.green } },
@@ -2822,17 +2862,21 @@ const OWN_ST = [ST(-30.0, -1.5, FACE.n, "sit", 15, 40, 0), ST(-33.0, -2.0, FACE.
 // inside a bay (the vans reverse through those); walking between spots goes along the fence side.
 const G_YARD = makeGraph(
   [[-8.0, -11.6], [-2.0, -11.6], [-15.0, -11.6], [-15.4, -16.5], [-15.0, -19.0], [-8.0, -19.0], [-2.0, -19.0],
-   [-20.5, -17.0], [-22.4, -17.6], [-24.5, -14.5], [-30.0, -17.6], [-36.0, -17.6]],
-  [[0, 5], [1, 6], [5, 6], [5, 4], [4, 3], [3, 2], [4, 7], [7, 8], [8, 9], [9, 10], [10, 11]]
+   [-20.5, -17.0], [-22.4, -17.6], [-24.5, -14.5], [-30.0, -17.6], [-36.0, -17.6], [-25.2, -18.2]],
+  [[0, 5], [1, 6], [5, 6], [5, 4], [4, 3], [3, 2], [4, 7], [7, 8], [8, 9], [9, 10], [10, 11], [8, 12]]
 );
 const LOADER_ST = [
   ST(-8.0, -11.6, FACE.s, "idle", 4, 9, 0), ST(-2.0, -11.6, FACE.s, "idle", 4, 9, 1),
   ST(-15.4, -16.5, FACE.w, "idle", 5, 10, 3), ST(-15.0, -11.6, FACE.s, "idle", 3, 7, 2), ST(-20.5, -17.0, FACE.w, "talk", 3, 6, 7),
 ];
-// Guard: checks the barrier, chats at the booth, patrols the fence line
+// Guard: checks the checkpoint booth window, guards the barrier, patrols the entrance and parking
 const GUARD_ST = [
-  ST(-22.4, -17.6, FACE.s, "work", 4, 8, 8), ST(-24.5, -14.5, FACE.n, "talk", 3, 6, 9), ST(-20.5, -17.0, FACE.e, "talk", 3, 6, 7),
-  ST(-30.0, -17.6, FACE.s, "idle", 2, 4, 10), ST(-36.0, -17.6, FACE.w, "idle", 2, 4, 11),
+  ST(-25.2, -18.2, FACE.e, "work", 6, 14, 12),
+  ST(-22.4, -17.6, FACE.s, "work", 5, 10, 8),
+  ST(-20.5, -17.0, FACE.e, "talk", 4, 8, 7),
+  ST(-24.5, -14.5, FACE.n, "talk", 3, 6, 9),
+  ST(-30.0, -17.6, FACE.s, "idle", 4, 8, 10),
+  ST(-36.0, -17.6, FACE.w, "idle", 3, 6, 11),
 ];
 
 // ── Customers: come in from the street, do their business, leave, come back later ──
@@ -2887,7 +2931,12 @@ function buildSidewalkGraph() {
 let PED_GRAPH = null;
 const _pv = new THREE.Vector3();
 function trafficNear(x, z, r) {
-  return vehicles.some((o) => o.speed > 0.4 && Math.hypot(o.root.position.x - x, o.root.position.z - z) < r);
+  return vehicles.some((o) => {
+    const dist = Math.hypot(o.root.position.x - x, o.root.position.z - z);
+    // Pedestrians give way to company trucks from a safe distance, even when the truck is slowing down
+    if (o.kind === "truck") return dist < 25 && (o.speed > 0.15 || dist < 12);
+    return o.speed > 0.4 && dist < r;
+  });
 }
 function pedestrianJob(p) {
   const g = PED_GRAPH;
@@ -2923,6 +2972,8 @@ function pedestrianJob(p) {
 }
 // Used by the traffic: pedestrians currently on a crossing
 function pedestrianOnCrossing(v) {
+  // Darkhost company trucks have absolute priority — pedestrians give way to company drivers
+  if (v.kind === "truck") return false;
   _fwd.set(0, 0, 1).applyQuaternion(v.root.quaternion);
   return people.some((p) => {
     if (!p.crossing) return false;
@@ -2965,15 +3016,21 @@ function startLoading(v, stop) {
   const putInVan = () => [T.face(yawVan), T.anim("work", 1.0), T.call((q) => { if (q.carry) q.carry.visible = false; q.carry = null; })];
   const goDoor = () => [T.walk(doorStand.x, doorStand.z, 1.1), T.face(yawTo(doorStand, door))];
   const goRear = () => [T.walk(rear.x, rear.z, 1.1)];
-  const placeAtDoor = (c) => [T.anim("work", 1.0), T.call((q) => { q.carry = null; c.position.set(door.x, stop.kind === "dock" ? 0.36 : door.y - 0.2, door.z); c.rotation.set(0, yawTo(rear, door) + Math.PI / 2, 0); c.visible = true; })];
+  const placeAtDoor = (c) => [T.anim("work", 1.0), T.call((q) => { q.carry = null; c.position.set(door.x, stop.kind === "unload" ? 0.36 : door.y - 0.2, door.z); c.rotation.set(0, yawTo(rear, door) + Math.PI / 2, 0); c.visible = true; })];
   const pickAtDoor = (c) => [T.anim("work", 1.0), T.call((q) => { q.carry = c; })];
   if (stop.kind === "pickup") {
     p.tasks.push(...goDoor(), ...pickAtDoor(dirty), ...goRear(), ...putInVan());
   } else if (stop.kind === "deliver") {
     p.tasks.push(...takeFromVan(clean), ...goDoor(), ...placeAtDoor(clean), T.anim("talk", 1.5), T.call(() => { clean.visible = false; }), ...goRear());
+  } else if (stop.kind === "unload") {
+    // Washers' dock: hand the dirty carpet in - nothing is taken back here
+    p.tasks.push(...takeFromVan(dirty), ...goDoor(), ...placeAtDoor(dirty), T.call(() => handOverAtDock(stop, dirty)), T.anim("idle", 1.0), ...goRear());
   } else {
-    p.tasks.push(...takeFromVan(dirty), ...goDoor(), ...placeAtDoor(dirty), T.call(() => handOverAtDock(stop, dirty)), T.anim("idle", 1.0));
-    p.tasks.push(T.call(() => { clean.position.set(door.x + 0.6, 0.36, door.z); clean.rotation.set(0, yawTo(rear, door) + Math.PI / 2, 0); clean.visible = true; }));
+    // Packers' dock: only collect the clean, packed carpet a packer brings out - nothing is unloaded here
+    // If the packer gets pulled away to another dock meanwhile, the roll simply appears after a while so the van is never stuck
+    let showClean = null, waitFrom = 0;
+    p.tasks.push(...goDoor(), T.call(() => { showClean = bringOutAtDock(stop, clean, yawTo(rear, door) + Math.PI / 2); waitFrom = performance.now(); }));
+    p.tasks.push(T.wait(() => { if (!clean.visible && performance.now() - waitFrom > 25000) showClean(); return clean.visible; }));
     p.tasks.push(...pickAtDoor(clean), ...goRear(), ...putInVan());
   }
   p.tasks.push(T.face(yawVan), T.call(() => { v.doorTarget = 0; }), T.anim("work", 1.2));
@@ -3001,6 +3058,29 @@ function handOverAtDock(stop, carpet) {
   loader.tasks.push(...way.map(([x, z]) => T.walk(x, z)), T.face(FACE.n), T.anim("work", 1.2), T.call((q) => { if (q.carry) { q.carry.visible = false; worldGroup.remove(q.carry); } q.carry = null; }));
   const gapX = d.x < -5 ? -8.0 : -2.0; // pallet spot next to this bay
   loader.tasks.push(...way.slice(0, -1).reverse().map(([x, z]) => T.walk(x, z)), T.walk(d.x, -10.7), T.walk(gapX, -10.7), T.walk(gapX, -11.6), T.face(FACE.s));
+}
+
+// A yard packer fetches the clean, packed carpet from the packers' rack and brings it out to the van
+function bringOutAtDock(stop, carpet, yaw) {
+  const d = stop.target.doorPoint;
+  const show = () => { carpet.position.set(d.x + 0.6, 0.36, d.z); carpet.rotation.set(0, yaw, 0); carpet.visible = true; };
+  const loader = people.filter((q) => q.isLoader).sort((a, b) => a.root.position.distanceTo(d) - b.root.position.distanceTo(d))[0];
+  if (!loader) { show(); return show; }
+  if (loader.lastStation && loader.lastStation.busy === loader) loader.lastStation.busy = null;
+  loader.tasks.length = 0;
+  if (loader.carry) { loader.carry.visible = false; if (loader.carry.isBag) worldGroup.remove(loader.carry); loader.carry = null; }
+  const bag = carpet.clone();
+  bag.isBag = true;
+  bag.visible = false;
+  worldGroup.add(bag);
+  // Into the packers' side (rack of packed orders by the dispatch window), pick the roll, back out to the dock
+  const way = [[d.x, -10.7], [d.x, -9.3], [2.6, -8.4]];
+  loader.tasks.push(...way.map(([x, z]) => T.walk(x, z)), T.face(FACE.e), T.anim("work", 1.2), T.call((q) => { q.carry = bag; }));
+  loader.tasks.push(...way.slice(0, -1).reverse().map(([x, z]) => T.walk(x, z)), T.walk(d.x, d.z - 1.6), T.face(0), T.anim("work", 1.0));
+  loader.tasks.push(T.call((q) => { q.carry = null; bag.visible = false; worldGroup.remove(bag); show(); }));
+  const gapX = d.x < -5 ? -8.0 : -2.0;
+  loader.tasks.push(T.walk(d.x, -10.7), T.walk(gapX, -10.7), T.walk(gapX, -11.6), T.face(FACE.s));
+  return show;
 }
 
 function spawnPeople() {
@@ -3044,13 +3124,16 @@ function spawnPeople() {
   // 6. Dispatch: operators send pickup drivers out from the board (requireDispatchRole includes receptionist)
   addPerson({ ...U.operator, recolor: { White: BRANDC.navy, Orange: BRANDC.charcoal, Hair_Blond: 0x2b1d14 }, x: -18.4, z: 0.2, rotY: FACE.w, anim: "sit" }).job = stationJob(G_DISP, DISP_ST);
   addPerson({ ...U.operatorM, x: -18.4, z: 2.4, rotY: FACE.w, anim: "sit", skin: S[1] }).job = stationJob(G_DISP, DISP_ST);
-  // Service yard: packers receive bags from the drivers and hand clean orders back (no guard — not a CRM role)
+  // Service yard: packers receive bags from the drivers and hand clean orders back
   for (let i = 0; i < 2; i++) {
     const st = LOADER_ST[i];
     const l = addPerson({ ...U.packer, x: st.x, z: st.z, rotY: st.yaw, anim: "work", y: 0.09, skin: S[(i + 1) % 4] });
     l.isLoader = true;
     l.job = stationJob(G_YARD, LOADER_ST);
   }
+  // 7. Security guard at the company checkpoint booth and barrier
+  const guard = addPerson({ ...U.guard, x: -25.2, z: -18.2, rotY: FACE.e, anim: "work", y: 0.09, skin: S[1] });
+  if (guard) guard.job = stationJob(G_YARD, GUARD_ST);
   // Pedestrians on the sidewalk network
   for (let i = 0; i < 18; i++) {
     const n = PED_GRAPH.nodes[Math.floor(Math.random() * PED_GRAPH.nodes.length)];
