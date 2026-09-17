@@ -91,7 +91,7 @@ const ZONES_DATA = [
     id: "driver",
     category: "driver",
     title: "Водитель",
-    subtitle: "Комната водителей, доки и маршруты · роль driver",
+    subtitle: "Комната водителей, 5 машин со своими стоянками, доки · роль driver",
     description:
       "Водитель начинает смену в приложении и едет по точкам маршрута: у двери клиента создаёт мешок и добавляет вещи, привозит их в цех, готовые заказы доставляет обратно с фото подписи и принимает наличные. В конце смены сдаёт кассу менеджеру.",
     crmHref: "../web",
@@ -356,14 +356,16 @@ function createCylinder(rt, rb, h, seg, mat, pos, shadow = true) {
 // Main road at z=12.6, two inner streets, three vertical streets (west / middle / east)
 // so delivery vans can loop around each block.
 // Roads are 9.6 wide: two 3.4m driving lanes + a 1.4m parking lane on each side.
-const WORLD = { xMin: -58, xMax: 158, zMin: -44, zMax: 22 };
+const WORLD = { xMin: -58, xMax: 158, zMin: -54, zMax: 22 };
 const ROAD_W = 12; // one "Road Bits" tile stretched to 12m: two 6m halves (driving lane + parking)
 const LANE_OFFSET = 2.4; // driving lane centre from road centre
 const PARK_OFFSET = 4.9; // parking lane centre from road centre
 const SIDEWALK_W = 1.4;
 // Street centrelines are derived so the campus lot keeps its footprint (x -39.8..5.8, z -19.8..6.4)
 const MAIN_ROAD_Z = 6.4 + ROAD_W / 2 + SIDEWALK_W;
-const STREET_Z = [-19.8 - ROAD_W / 2 - SIDEWALK_W];
+// The service yard is 18 m deep (z YARD_Z0..-10) so five company vans get their own stalls beside the docks
+const YARD_Z0 = -28;
+const STREET_Z = [YARD_Z0 - ROAD_W / 2 - SIDEWALK_W];
 const VERT_X = [5.8 + ROAD_W / 2 + SIDEWALK_W, 5.8 + ROAD_W / 2 + SIDEWALK_W + 68, 5.8 + ROAD_W / 2 + SIDEWALK_W + 136];
 const WEST_X = -39.8 - ROAD_W / 2 - SIDEWALK_W; // street west of the campus; lets the vans loop through the yard
 const CROSS_X = VERT_X[1];
@@ -522,8 +524,12 @@ function addLaundryCart(x, z, rotY) {
 // Lot sits between the west street (x=-46) and the west vertical street (x=12),
 // between street 1 (z=-26) and the main road (z=12.6).
 const CAMPUS = { x0: -38, x1: 5.4, zFront: 5, zBack: -10, wallH: 3.4 };
-const YARD = { z0: -19.8, z1: -10 };
-const LOT = { x0: -39.8, x1: 6.8, z0: -19.8, z1: 6.4 };
+const YARD = { z0: YARD_Z0, z1: -10 };
+const LOT = { x0: -39.8, x1: 6.8, z0: YARD_Z0, z1: 6.4 };
+// Five van stalls along the street side of the yard, west of the docks; vans reverse in from the street
+const VAN_STALLS = [-31.0, -27.2, -23.4, -19.6, -15.8].map((x, i) => ({ x, n: i + 1 }));
+const STALL_W = 3.4;
+const STALL_L = 7.2;
 const DOCK_BAYS = [{ x: -11 }, { x: -5 }, { x: 1 }];
 const DOCK_W = 3.2;
 
@@ -588,8 +594,10 @@ wallZ(CAMPUS.x1, CAMPUS.zBack, CAMPUS.zFront, WH, M.wallClay, 0.34);
 // Back wall with three dock openings (roller doors rolled up)
 {
   let x = CAMPUS.x0;
-  DOCK_BAYS.forEach((b) => {
-    wallX(CAMPUS.zBack, x, b.x - DOCK_W / 2, WH, M.wallClay);
+  DOCK_BAYS.forEach((b, i) => {
+    // Drivers' room (x -22..-14) gets a staff door to the yard next to the route board
+    if (i === 0) wallXDoor(CAMPUS.zBack, x, b.x - DOCK_W / 2, -21.4, -20.2, WH, M.wallClay);
+    else wallX(CAMPUS.zBack, x, b.x - DOCK_W / 2, WH, M.wallClay);
     worldGroup.add(createBox(DOCK_W, WH - 2.7, 0.34, M.wallClay, { x: b.x, y: 2.7 + (WH - 2.7) / 2, z: CAMPUS.zBack }));
     worldGroup.add(createBox(DOCK_W + 0.3, 0.45, 0.5, M.rollerDoor, { x: b.x, y: 2.5, z: CAMPUS.zBack - 0.1 }));
     worldGroup.add(createBox(DOCK_W, 0.06, 0.06, M.parkingYellow, { x: b.x, y: 2.72, z: CAMPUS.zBack - 0.2 }, false));
@@ -1012,6 +1020,18 @@ DOCK_BAYS.forEach((b, i) => {
   label3d(`ДОК ${i + 1}`, 1.4, 0.4, { x: b.x, y: 3.1, z: CAMPUS.zBack - 0.19 }, Math.PI, { bg: "#52B369", size: 0.6 });
 });
 // Customer / staff parking stalls along the west part of the yard
+// Van stalls: yellow bays, a numbered sign post at the head of each, curb stones toward the yard lane
+VAN_STALLS.forEach((st) => {
+  const zHead = YARD.z0 + STALL_L;
+  [-1, 1].forEach((sg) => worldGroup.add(createBox(0.12, 0.06, STALL_L - 0.3, M.parkingYellow, { x: st.x + (sg * STALL_W) / 2, y: 0.08, z: YARD.z0 + 0.15 + (STALL_L - 0.3) / 2 }, false)));
+  worldGroup.add(createBox(STALL_W, 0.06, 0.12, M.parkingYellow, { x: st.x, y: 0.08, z: zHead - 0.06 }, false));
+  worldGroup.add(createBox(2.2, 0.14, 0.22, M.curbStone, { x: st.x, y: 0.14, z: zHead + 0.2 }));
+  worldGroup.add(createCylinder(0.05, 0.05, 2.1, 8, M.graphite, { x: st.x, y: 1.05, z: zHead + 0.55 }, false));
+  label3d(`МЕСТО ${st.n}`, 1.15, 0.36, { x: st.x, y: 2.0, z: zHead + 0.5 }, Math.PI, { bg: "#033D53", size: 0.6 });
+});
+label3d("СТОЯНКА ВОДИТЕЛЕЙ · 5 МАШИН", 5.2, 0.5, { x: -23.4, y: 2.9, z: YARD.z0 + STALL_L + 1.0 }, Math.PI, { bg: "#52B369", size: 0.6 });
+[-1, 1].forEach((sg) => worldGroup.add(createCylinder(0.05, 0.05, 2.7, 8, M.graphite, { x: -23.4 + sg * 2.5, y: 1.35, z: YARD.z0 + STALL_L + 1.0 }, false)));
+// Customer / staff parking stalls along the west part of the yard
 const STALL_XS = [-37, -34, -31, -28, -25, -22, -19];
 STALL_XS.forEach((sx, i) => {
   worldGroup.add(createBox(0.12, 0.06, 5.4, M.roadStripe, { x: sx - 1.5, y: 0.08, z: YARD.z1 - 2.7 }, false));
@@ -1027,22 +1047,21 @@ function steelFence(x0, x1, z) {
   for (let x = x0; x <= x1 + 0.01; x += 2.0) worldGroup.add(createBox(0.12, 1.7, 0.12, M.fenceSteel, { x, y: 0.85, z }, false));
   for (let x = x0 + 0.25; x < x1; x += 0.25) worldGroup.add(createBox(0.03, 1.5, 0.03, M.fenceSteel, { x, y: 0.85, z }, false));
 }
-steelFence(LOT.x0, -24.5, YARD.z0 + 0.2);
-steelFence(-19.5, DOCK_BAYS[0].x - 3.2, YARD.z0 + 0.2);
+// Street side: guard booth + barrier gate at the west end, then an open apron for the van stalls and docks
 steelFence(DOCK_BAYS[2].x + 3.2, LOT.x1, YARD.z0 + 0.2);
 worldGroup.add(createBox(0.12, 1.7, YARD.z1 - YARD.z0, M.fenceSteel, { x: LOT.x0, y: 0.85, z: cx(YARD.z0, YARD.z1) }, false));
 worldGroup.add(createBox(0.12, 1.7, YARD.z1 - YARD.z0, M.fenceSteel, { x: LOT.x1, y: 0.85, z: cx(YARD.z0, YARD.z1) }, false));
 // Barrier gate at the parking entrance
-worldGroup.add(createBox(0.35, 1.05, 0.35, M.signNavy, { x: -24.3, y: 0.52, z: YARD.z0 + 0.6 }));
-worldGroup.add(createBox(4.6, 0.12, 0.05, M.barrierArm, { x: -22.0, y: 0.95, z: YARD.z0 + 0.6 }));
-worldGroup.add(createBox(0.28, 1.15, 0.28, M.graphite, { x: -19.7, y: 0.58, z: YARD.z0 + 1.2 }));
+worldGroup.add(createBox(0.35, 1.05, 0.35, M.signNavy, { x: -37.5, y: 0.52, z: YARD.z0 + 0.6 }));
+worldGroup.add(createBox(3.8, 0.12, 0.05, M.barrierArm, { x: -35.5, y: 0.95, z: YARD.z0 + 0.6 }));
+worldGroup.add(createBox(0.28, 1.15, 0.28, M.graphite, { x: -33.4, y: 0.58, z: YARD.z0 + 1.2 }));
 // Security checkpoint booth (КПП охраны)
-worldGroup.add(createBox(1.9, 2.6, 1.9, M.graphite, { x: -26.3, y: 1.3, z: YARD.z0 + 1.2 }));
-worldGroup.add(createBox(1.6, 1.1, 0.05, M.glassCyan, { x: -26.3, y: 1.4, z: YARD.z0 + 2.16 }, false));
-worldGroup.add(createBox(0.05, 1.1, 1.5, M.glassCyan, { x: -25.34, y: 1.4, z: YARD.z0 + 1.2 }, false));
-worldGroup.add(createBox(2.3, 0.12, 2.3, M.brandNavy, { x: -26.3, y: 2.66, z: YARD.z0 + 1.2 }, false));
-worldGroup.add(createBox(2.3, 0.04, 2.3, M.brandGreen, { x: -26.3, y: 2.74, z: YARD.z0 + 1.2 }, false));
-label3d("КПП · ОХРАНА", 1.5, 0.28, { x: -26.3, y: 2.32, z: YARD.z0 + 2.17 }, 0, { bg: "#033D53", size: 0.45 });
+worldGroup.add(createBox(1.9, 2.6, 1.9, M.graphite, { x: -38.7, y: 1.3, z: YARD.z0 + 1.2 }));
+worldGroup.add(createBox(1.6, 1.1, 0.05, M.glassCyan, { x: -38.7, y: 1.4, z: YARD.z0 + 2.16 }, false));
+worldGroup.add(createBox(0.05, 1.1, 1.5, M.glassCyan, { x: -37.74, y: 1.4, z: YARD.z0 + 1.2 }, false));
+worldGroup.add(createBox(2.3, 0.12, 2.3, M.brandNavy, { x: -38.7, y: 2.66, z: YARD.z0 + 1.2 }, false));
+worldGroup.add(createBox(2.3, 0.04, 2.3, M.brandGreen, { x: -38.7, y: 2.74, z: YARD.z0 + 1.2 }, false));
+label3d("КПП · ОХРАНА", 1.5, 0.28, { x: -38.7, y: 2.32, z: YARD.z0 + 2.17 }, 0, { bg: "#033D53", size: 0.45 });
 // Light poles and planters
 function addParkingLightPole(x, z) {
   const g = new THREE.Group();
@@ -1054,7 +1073,7 @@ function addParkingLightPole(x, z) {
   g.position.set(x, 0, z);
   worldGroup.add(g);
 }
-[-38.5, -16.5, 4.8].forEach((px) => addParkingLightPole(px, YARD.z0 + 1.0));
+[[LOT.x0 + 1.2, -19.4], [-13.4, -19.4], [LOT.x1 - 1.0, -19.4]].forEach(([px, pz]) => addParkingLightPole(px, pz));
 [[-39.2, 2.0], [5.2, 2.0], [-39.2, -13.0], [5.2, -13.0]].forEach(([px, pz]) => {
   worldGroup.add(createBox(1.2, 0.5, 1.2, M.curbStone, { x: px, y: 0.25, z: pz }));
   const b = new THREE.Mesh(new THREE.SphereGeometry(0.5, 8, 6), M.bush);
@@ -1795,64 +1814,38 @@ const W = WEST_X;
 const P = (x, z) => ({ x, z });
 // Every loop passes the campus docks on street 1 heading east (docks on the right).
 // Docks 1-2 (x=-11, -5) open onto the washers' hall, dock 3 (x=1) onto the packers' side.
-// Stops run in loop order and repeat: pickup at a house -> washer dock (hand the dirty carpet in)
-// -> packer dock (collect the clean, packed one) -> deliver. A van never unloads at the packers'
-// dock and never picks up at a washers' dock.
+// Every van starts the day in its own stall in the yard ("base"): the driver walks out of the drivers'
+// room, gets in and pulls out. Stops then repeat: pickup at a house -> washer dock (hand the dirty carpet
+// in) -> packer dock (collect the clean, packed one; a packer has it waiting) -> deliver ... -> back to base.
+// A van never unloads at the packers' dock and never picks up at a washers' dock.
 const WASH_DOCKS = [0, 1];
 const PACK_DOCK = 2;
+const LOOP_V1 = [P(V[1], MAIN), P(W, MAIN), P(W, S1), P(V[1], S1)];
+const LOOP_V2 = [P(V[2], MAIN), P(W, MAIN), P(W, S1), P(V[2], S1)];
+const run = (pick, wash, drop) => [{ house: pick, kind: "pickup" }, { dock: wash, kind: "unload" }, { dock: PACK_DOCK, kind: "collect" }, { house: drop, kind: "deliver" }];
 const TRUCK_ROUTES = [
-  {
-    plate: "0101 DH 01",
-    loop: [P(V[1], MAIN), P(W, MAIN), P(W, S1), P(V[1], S1)],
-    start: 0.02,
-    stops: [
-      { house: 2, kind: "pickup" },
-      { dock: WASH_DOCKS[0], kind: "unload" },
-      { dock: PACK_DOCK, kind: "collect" },
-      { house: 12, kind: "deliver" },
-      { house: 3, kind: "pickup" },
-      { dock: WASH_DOCKS[0], kind: "unload" },
-      { dock: PACK_DOCK, kind: "collect" },
-      { house: 13, kind: "deliver" },
-    ],
-  },
-  {
-    plate: "0102 DH 01",
-    loop: [P(V[2], MAIN), P(W, MAIN), P(W, S1), P(V[2], S1)],
-    start: 0.5,
-    stops: [
-      { house: 7, kind: "pickup" },
-      { dock: WASH_DOCKS[1], kind: "unload" },
-      { dock: PACK_DOCK, kind: "collect" },
-      { house: 17, kind: "deliver" },
-      { house: 8, kind: "pickup" },
-      { dock: WASH_DOCKS[1], kind: "unload" },
-      { dock: PACK_DOCK, kind: "collect" },
-      { house: 16, kind: "deliver" },
-    ],
-  },
-  {
-    plate: "0103 DH 01",
-    loop: [P(V[2], MAIN), P(W, MAIN), P(W, S1), P(V[2], S1)],
-    start: 0.2,
-    stops: [
-      { house: 4, kind: "pickup" },
-      { dock: WASH_DOCKS[0], kind: "unload" },
-      { dock: PACK_DOCK, kind: "collect" },
-      { house: 10, kind: "deliver" },
-      { house: 1, kind: "pickup" },
-      { dock: WASH_DOCKS[1], kind: "unload" },
-      { dock: PACK_DOCK, kind: "collect" },
-      { house: 15, kind: "deliver" },
-    ],
-  },
+  { plate: "0101 DH 01", loop: LOOP_V1, stall: 0, stops: [{ stall: 0, kind: "base" }, ...run(2, WASH_DOCKS[0], 12), ...run(3, WASH_DOCKS[0], 13)] },
+  { plate: "0102 DH 01", loop: LOOP_V2, stall: 1, stops: [{ stall: 1, kind: "base" }, ...run(7, WASH_DOCKS[1], 17), ...run(8, WASH_DOCKS[1], 16)] },
+  { plate: "0103 DH 01", loop: LOOP_V2, stall: 2, stops: [{ stall: 2, kind: "base" }, ...run(4, WASH_DOCKS[0], 10), ...run(1, WASH_DOCKS[1], 15)] },
+  { plate: "0104 DH 01", loop: LOOP_V2, stall: 3, stops: [{ stall: 3, kind: "base" }, ...run(6, WASH_DOCKS[1], 18), ...run(9, WASH_DOCKS[0], 19)] },
+  { plate: "0105 DH 01", loop: LOOP_V2, stall: 4, stops: [{ stall: 4, kind: "base" }, ...run(5, WASH_DOCKS[0], 14), ...run(0, WASH_DOCKS[1], 11)] },
 ];
 const DOCK_TARGETS = DOCK_BAYS.map((b) => ({
+  isDock: true,
   drivewayX: b.x,
   roadZ: S1,
   parkPoint: new THREE.Vector3(b.x, 0, CAMPUS.zBack - 3.9),
   doorPoint: new THREE.Vector3(b.x, 0.9, CAMPUS.zBack + 0.6),
 }));
+// Van stalls are reached like docks: reverse in from street 1. doorPoint is the route board in the drivers' room.
+const STALL_TARGETS = VAN_STALLS.map((st) => ({
+  isDock: true,
+  drivewayX: st.x,
+  roadZ: S1,
+  parkPoint: new THREE.Vector3(st.x, 0, YARD.z0 + 3.9),
+  doorPoint: new THREE.Vector3(-20.9, 0.09, -6.5),
+}));
+const DRIVERS_DOOR = { x: -20.8, zOut: CAMPUS.zBack - 0.9, zIn: CAMPUS.zBack + 0.9 };
 const CIVIL_ROUTES = [
   { kind: "police", loop: [P(W, MAIN), P(V[2], MAIN), P(V[2], S1), P(W, S1)], start: 0.1, maxSpeed: 6.5 },
   { kind: "muscle", loop: [{ x: V[0], z: MAIN }, { x: V[2], z: MAIN }, { x: V[2], z: S1 }, { x: V[0], z: S1 }], start: 0.6, maxSpeed: 6 },
@@ -2036,6 +2029,8 @@ function updateDriver(v, dt, time) {
           }
           v.holding = false;
           v.committed = true;
+          // Packers' dock: the packer starts carrying the clean roll out now, so it is waiting when we park
+          if (stop.kind === "collect" && !v.stageShow) v.stageShow = bringOutAtDock(stop, v.carpetClean, Math.PI / 2);
         }
       }
       if (dist < brake) target = Math.max(0.8, v.maxSpeed * (dist / brake));
@@ -2099,6 +2094,8 @@ function updateDriver(v, dt, time) {
     setSignal(v, "hazard");
     const stop = v.stops[v.nextStop];
     v.loadT = (v.loadT || 0) + dt;
+    // First departure of the day waits for the characters to be loaded so the driver is seen walking out
+    if (!v.loadStarted && v.firstRun && !peopleReady && v.loadT < 25) return;
     if (!v.loadStarted) {
       // The driver steps out, opens the doors and carries the carpet; fall back to a timer until characters are loaded
       v.loadStarted = true;
@@ -2124,7 +2121,7 @@ function updateDriver(v, dt, time) {
       // Next stop is the neighbouring dock (washers -> packers): stay in this bay until it is free, otherwise
       // we would end up waiting in the lane right across its driveway and block its van from pulling out
       const next = v.stops[(v.nextStop + 1) % v.stops.length];
-      const nextTaken = !!next.target.parkPoint && vehicles.some((o) => {
+      const nextTaken = !!next.target.isDock && vehicles.some((o) => {
         if (o === v || !o.stops.length || o.root.position.distanceTo(v.root.position) > 40) return false;
         if (o.state === "reverse" || o.state === "exit") return true;
         const oStop = o.stops[o.nextStop];
@@ -2199,12 +2196,12 @@ function updateVehicles(dt, time) {
 function setupVehicles() {
   // Company trucks with pickup stops
   TRUCK_ROUTES.forEach((r) => {
-    const truck = makeDriver("truck", r, { maxSpeed: 7, accel: 3.2 });
+    const truck = makeDriver("truck", { ...r, start: 0 }, { maxSpeed: 7, accel: 3.2 });
     addTruckDressing(truck, r.plate);
     addSteering(truck);
     truck.stops = r.stops
       .map((st) => {
-        const target = st.dock !== undefined ? DOCK_TARGETS[st.dock] : HOUSE_LOTS[st.house];
+        const target = st.dock !== undefined ? DOCK_TARGETS[st.dock] : st.stall !== undefined ? STALL_TARGETS[st.stall] : HOUSE_LOTS[st.house];
         if (!target) return null;
         const near = nearestS(truck.path, truck.length, new THREE.Vector3(target.drivewayX, 0, target.roadZ));
         if (near.d > 4) {
@@ -2214,8 +2211,22 @@ function setupVehicles() {
         return { target, kind: st.kind, laneS: near.s, s: (near.s + PAST_DRIVEWAY) % truck.length };
       })
       .filter(Boolean);
-    truck.nextStop = Math.max(0, truck.stops.findIndex((st) => st.s > truck.s));
-    placeOnPath(truck, truck.s);
+    // Day starts at base: parked in the stall, driver still inside the building
+    const base = truck.stops[0];
+    truck.nextStop = 0;
+    truck.s = base.s;
+    truck.state = "load";
+    truck.loadStarted = false;
+    truck.firstRun = true;
+    truck.baseIndex = r.stall;
+    truck.loadDur = 6.5;
+    truck.timer = 6 + r.stall * 7;
+    truck.root.position.copy(base.target.parkPoint).setY(ROAD_TOP);
+    truck.root.lookAt(base.target.parkPoint.x, ROAD_TOP, base.target.parkPoint.z - 10);
+    const C = truck.path.getPointAt(base.laneS / truck.length);
+    const P1 = truck.path.getPointAt(base.s / truck.length);
+    truck.exitCurve = new THREE.QuadraticBezierCurve3(base.target.parkPoint.clone(), C, P1);
+    truck.exitLen = truck.exitCurve.getLength();
   });
 
   // Civilian traffic (no stops)
@@ -2232,6 +2243,7 @@ function setupVehicles() {
   const served = new Set(TRUCK_ROUTES.flatMap((r) => r.stops.filter((st) => st.house != null).map((st) => st.house)));
   let pk = 0;
   HOUSE_LOTS.forEach((lot, i) => {
+    if (i === 0) return; // Reserved for the customer who visits Darkhost with a carpet
     if (served.has(i) || served.has(i - 1) || served.has(i + 1)) return; // keep the neighbours clear too
     if (rnd() > 0.5) return;
     const v = spawnVehicle(parkedKinds[pk++ % parkedKinds.length]);
@@ -2249,11 +2261,11 @@ function setupVehicles() {
     worldGroup.add(v.root);
   });
 
-  // Customer car (drives from house to drop off carpet at "Прием партии")
+  // Customer car (drives from house 0 to drop off carpet at "Прием партии")
   customerCar = spawnVehicle("muscle");
+  addSteering(customerCar);
   addSignals(customerCar);
-  customerCar.root.position.set(24.0, ROAD_TOP, 16.5);
-  customerCar.root.lookAt(24.0, ROAD_TOP, 10.0);
+  initCustomerCar(HOUSE_LOTS[0]);
   worldGroup.add(customerCar.root);
 }
 
@@ -3075,35 +3087,56 @@ function startLoading(v, stop) {
   const yawVan = v.root.rotation.y; // facing the van's rear from behind = looking along +z of the van
   const dirty = v.carpetDirty, clean = v.carpetClean;
   p.floorY = 0.09;
+  if (stop.kind === "base") {
+    // Home stall: the driver walks in through the staff door to the route board, then back out to the van.
+    // On the very first run the day starts in the drivers' room, so only the way out is walked.
+    const laneZ = YARD.z0 + STALL_L + 1.4; // yard lane in front of the stall heads
+    const room = stop.target.doorPoint;
+    const toRoom = [T.walk(cab.x, laneZ, 1.25), T.walk(DRIVERS_DOOR.x, laneZ, 1.25), T.walk(DRIVERS_DOOR.x, DRIVERS_DOOR.zOut, 1.25), T.walk(DRIVERS_DOOR.x, DRIVERS_DOOR.zIn, 1.25), T.walk(room.x, room.z, 1.25), T.face(FACE.w)];
+    const toVan = [T.walk(DRIVERS_DOOR.x, DRIVERS_DOOR.zIn, 1.25), T.walk(DRIVERS_DOOR.x, DRIVERS_DOOR.zOut, 1.25), T.walk(DRIVERS_DOOR.x, laneZ, 1.25), T.walk(cab.x, laneZ, 1.25), T.walk(cab.x, cab.z, 1.25), T.face(yawTo(cab, rearSide) + Math.PI)];
+    p.tasks.length = 0;
+    if (v.firstRun) {
+      v.firstRun = false;
+      p.root.position.set(room.x, 0.09, room.z);
+      p.root.rotation.y = FACE.w;
+      p.tasks.push(T.call((q) => { q.root.visible = true; }), T.anim("work", 4 + (v.baseIndex || 0) * 7));
+    } else {
+      p.root.position.set(cab.x, 0.09, cab.z);
+      p.root.rotation.y = yawTo(cab, rearSide);
+      p.tasks.push(T.call((q) => { q.root.visible = true; }), ...toRoom, T.anim("work", 9));
+    }
+    p.tasks.push(...toVan, T.anim("idle", 0.4), T.call((q) => { q.root.visible = false; v.loadDone = true; }));
+    return true;
+  }
   p.root.position.set(cab.x, 0.09, cab.z);
   p.root.rotation.y = yawTo(cab, rearSide);
   p.tasks.length = 0;
   p.tasks.push(T.call((q) => { q.root.visible = true; }));
   p.tasks.push(T.walk(rearSide.x, rearSide.z, 1.2), T.walk(rear.x, rear.z, 1.2), T.face(yawVan));
-  p.tasks.push(T.call(() => { v.doorTarget = 1; }), T.anim("work", 1.2));
-  const takeFromVan = (c) => [T.face(yawVan), T.anim("work", 1.0), T.call((q) => { q.carry = c; })];
-  const putInVan = () => [T.face(yawVan), T.anim("work", 1.0), T.call((q) => { if (q.carry) q.carry.visible = false; q.carry = null; })];
+  p.tasks.push(T.call(() => { v.doorTarget = 1; }), T.anim("work", 0.8));
+  const takeFromVan = (c) => [T.face(yawVan), T.anim("work", 0.7), T.call((q) => { q.carry = c; })];
+  const putInVan = () => [T.face(yawVan), T.anim("work", 0.7), T.call((q) => { if (q.carry) q.carry.visible = false; q.carry = null; })];
   const goDoor = () => [T.walk(doorStand.x, doorStand.z, 1.1), T.face(yawTo(doorStand, door))];
   const goRear = () => [T.walk(rear.x, rear.z, 1.1)];
-  const placeAtDoor = (c) => [T.anim("work", 1.0), T.call((q) => { q.carry = null; c.position.set(door.x, stop.kind === "unload" ? 0.36 : door.y - 0.2, door.z); c.rotation.set(0, yawTo(rear, door) + Math.PI / 2, 0); c.visible = true; })];
-  const pickAtDoor = (c) => [T.anim("work", 1.0), T.call((q) => { q.carry = c; })];
+  const placeAtDoor = (c) => [T.anim("work", 0.7), T.call((q) => { q.carry = null; c.position.set(door.x, stop.kind === "unload" ? 0.36 : door.y - 0.2, door.z); c.rotation.set(0, yawTo(rear, door) + Math.PI / 2, 0); c.visible = true; })];
+  const pickAtDoor = (c) => [T.anim("work", 0.7), T.call((q) => { q.carry = c; })];
   if (stop.kind === "pickup") {
     p.tasks.push(...goDoor(), ...pickAtDoor(dirty), ...goRear(), ...putInVan());
   } else if (stop.kind === "deliver") {
     p.tasks.push(...takeFromVan(clean), ...goDoor(), ...placeAtDoor(clean), T.anim("talk", 1.5), T.call(() => { clean.visible = false; }), ...goRear());
   } else if (stop.kind === "unload") {
     // Washers' dock: hand the dirty carpet in - nothing is taken back here
-    p.tasks.push(...takeFromVan(dirty), ...goDoor(), ...placeAtDoor(dirty), T.call(() => handOverAtDock(stop, dirty)), T.anim("idle", 1.0), ...goRear());
+    p.tasks.push(...takeFromVan(dirty), ...goDoor(), ...placeAtDoor(dirty), T.call(() => handOverAtDock(stop, dirty)), ...goRear());
   } else {
     // Packers' dock: only collect the clean, packed carpet a packer brings out - nothing is unloaded here
     // If the packer gets pulled away to another dock meanwhile, the roll simply appears after a while so the van is never stuck
-    let showClean = null;
-    p.tasks.push(...goDoor(), T.call(() => { showClean = bringOutAtDock(stop, clean, yawTo(rear, door) + Math.PI / 2); }));
-    p.tasks.push(T.wait(() => { if (!clean.visible && v.loadT > 45) showClean(); return clean.visible; }));
-    p.tasks.push(...pickAtDoor(clean), ...goRear(), ...putInVan());
+    // A packer started carrying it out when the van committed to this dock, so it is usually already waiting
+    p.tasks.push(...goDoor(), T.call(() => { if (!v.stageShow) v.stageShow = bringOutAtDock(stop, clean, yawTo(rear, door) + Math.PI / 2); }));
+    p.tasks.push(T.wait(() => { if (!clean.visible && v.loadT > 30) v.stageShow(); return clean.visible; }));
+    p.tasks.push(...pickAtDoor(clean), ...goRear(), ...putInVan(), T.call(() => { v.stageShow = null; }));
   }
-  p.tasks.push(T.face(yawVan), T.call(() => { v.doorTarget = 0; }), T.anim("work", 1.2));
-  p.tasks.push(T.walk(rearSide.x, rearSide.z, 1.2), T.walk(cab.x, cab.z, 1.2), T.anim("idle", 0.4));
+  p.tasks.push(T.face(yawVan), T.call(() => { v.doorTarget = 0; }), T.anim("work", 0.8));
+  p.tasks.push(T.walk(rearSide.x, rearSide.z, 1.3), T.walk(cab.x, cab.z, 1.3), T.anim("idle", 0.3));
   p.tasks.push(T.call((q) => { q.root.visible = false; v.loadDone = true; }));
   return true;
 }
@@ -3151,8 +3184,8 @@ function bringOutAtDock(stop, carpet, yaw) {
   worldGroup.add(bag);
   // Into the packers' side (rack of packed orders by the dispatch window), pick the roll, back out to the dock
   const way = [[d.x, -10.7], [d.x, -9.3], [2.6, -8.4]];
-  loader.tasks.push(...way.map(([x, z]) => T.walk(x, z)), T.face(FACE.e), T.anim("work", 1.2), T.call((q) => { q.carry = bag; }));
-  loader.tasks.push(...way.slice(0, -1).reverse().map(([x, z]) => T.walk(x, z)), T.walk(d.x, d.z - 1.6), T.face(0), T.anim("work", 1.0));
+  loader.tasks.push(...way.map(([x, z]) => T.walk(x, z, 1.35)), T.face(FACE.e), T.anim("work", 0.9), T.call((q) => { q.carry = bag; }));
+  loader.tasks.push(...way.slice(0, -1).reverse().map(([x, z]) => T.walk(x, z, 1.35)), T.walk(d.x, d.z - 1.6, 1.35), T.face(0), T.anim("work", 0.7));
   loader.tasks.push(T.call((q) => { q.carry = null; bag.visible = false; worldGroup.remove(bag); show(); }));
   const gapX = d.x < -5 ? -8.0 : -2.0;
   loader.tasks.push(T.walk(d.x, -10.7), T.walk(gapX, -10.7), T.walk(gapX, -11.6), T.face(FACE.s), T.call((q) => { q.dockErrand = false; }));
@@ -3163,47 +3196,85 @@ function bringOutAtDock(stop, carpet, yaw) {
 let customerCar = null;
 let customerRunner = null;
 let customerCarpet = null;
-let customerCarState = "at_home"; // "at_home" | "driving_to_company" | "parked_at_company" | "driving_home"
-let customerTimer = 2.0;
-let customerT = 0;
+let customerCarState = "at_home"; // "at_home" | "driving_to_company" | "parked_at_company" | "ready_to_drive_home" | "driving_home"
+let customerTimer = 3.0;
+let custDist = 0;
+let custSpeed = 0;
+let custLotRef = null;
 
-const CUST_P_TO = [
-  new THREE.Vector3(24.0, ROAD_TOP, 16.5),
-  new THREE.Vector3(24.0, ROAD_TOP, 11.4),
-  new THREE.Vector3(-3.5, ROAD_TOP, 11.4),
-  new THREE.Vector3(-5.2, ROAD_TOP, 8.5),
-];
-const CUST_PATH_TO = new THREE.CurvePath();
-for (let i = 0; i < CUST_P_TO.length - 1; i++) {
-  CUST_PATH_TO.add(new THREE.LineCurve3(CUST_P_TO[i], CUST_P_TO[i + 1]));
-}
-const CUST_LEN_TO = CUST_PATH_TO.getLength();
+let custPathTo = null;
+let custLenTo = 0;
+let custPathHome = null;
+let custLenHome = 0;
 
-const CUST_P_HOME = [
-  new THREE.Vector3(-5.2, ROAD_TOP, 8.5),
-  new THREE.Vector3(-2.0, ROAD_TOP, 16.0),
-  new THREE.Vector3(24.0, ROAD_TOP, 16.0),
-  new THREE.Vector3(24.0, ROAD_TOP, 16.5),
-];
-const CUST_PATH_HOME = new THREE.CurvePath();
-for (let i = 0; i < CUST_P_HOME.length - 1; i++) {
-  CUST_PATH_HOME.add(new THREE.LineCurve3(CUST_P_HOME[i], CUST_P_HOME[i + 1]));
+function initCustomerCar(lot) {
+  custLotRef = lot || (typeof HOUSE_LOTS !== "undefined" && HOUSE_LOTS.length ? HOUSE_LOTS[0] : null);
+  if (!custLotRef || !customerCar) return;
+
+  const dx = custLotRef.drivewayX;
+  const pz = custLotRef.parkPoint.z - 1.2; // in driveway in front of garage
+
+  // Park in driveway facing north toward Main Road
+  customerCar.root.position.set(dx, ROAD_TOP, pz);
+  customerCar.root.lookAt(dx, ROAD_TOP, pz + 6.0);
+  customerCar.signal = null;
+
+  // Ultra-smooth CatmullRom splines
+  // 1. Path from driveway to Darkhost Drop-off
+  const ptsTo = [
+    new THREE.Vector3(dx, ROAD_TOP, pz),
+    new THREE.Vector3(dx, ROAD_TOP, 7.5),
+    new THREE.Vector3(dx - 1.2, ROAD_TOP, 9.8),
+    new THREE.Vector3(dx - 3.8, ROAD_TOP, 11.2),
+    new THREE.Vector3(dx - 8.0, ROAD_TOP, 11.4),
+    new THREE.Vector3(8.0, ROAD_TOP, 11.4),
+    new THREE.Vector3(0.0, ROAD_TOP, 11.4),
+    new THREE.Vector3(-3.2, ROAD_TOP, 11.0),
+    new THREE.Vector3(-4.8, ROAD_TOP, 9.5),
+    new THREE.Vector3(-5.2, ROAD_TOP, 8.2),
+  ];
+  custPathTo = new THREE.CatmullRomCurve3(ptsTo, false, "catmullrom", 0.25);
+  custLenTo = custPathTo.getLength();
+
+  // 2. Path from Darkhost Drop-off back to Home Driveway
+  const ptsHome = [
+    new THREE.Vector3(-5.2, ROAD_TOP, 8.2),
+    new THREE.Vector3(-4.6, ROAD_TOP, 10.5),
+    new THREE.Vector3(-2.2, ROAD_TOP, 14.8),
+    new THREE.Vector3(1.0, ROAD_TOP, 16.0),
+    new THREE.Vector3(8.0, ROAD_TOP, 16.0),
+    new THREE.Vector3(dx - 8.0, ROAD_TOP, 16.0),
+    new THREE.Vector3(dx - 4.0, ROAD_TOP, 15.6),
+    new THREE.Vector3(dx - 1.5, ROAD_TOP, 13.5),
+    new THREE.Vector3(dx - 0.2, ROAD_TOP, 10.0),
+    new THREE.Vector3(dx, ROAD_TOP, 6.5),
+    new THREE.Vector3(dx, ROAD_TOP, pz),
+  ];
+  custPathHome = new THREE.CatmullRomCurve3(ptsHome, false, "catmullrom", 0.25);
+  custLenHome = custPathHome.getLength();
+
+  custDist = 0;
+  custSpeed = 0;
+  customerCarState = "at_home";
+  customerTimer = 2.5; // initial wait before driving
 }
-const CUST_LEN_HOME = CUST_PATH_HOME.getLength();
 
 function startCustomerDropoff() {
   if (!customerRunner) return;
-  customerRunner.root.position.set(-5.2, FLOOR_Y, 7.5);
+  // Step out right at driver side door of parked car
+  customerRunner.root.position.set(-4.3, 0.09, 8.2);
+  customerRunner.root.rotation.set(0, FACE.n, 0);
   customerRunner.root.visible = true;
+
   if (customerCarpet) customerCarpet.visible = true;
   customerRunner.carry = customerCarpet;
   customerRunner.tasks.length = 0;
   customerRunner.tasks.push(
-    T.walk(-5.2, 6.4),
-    T.walk(-5.2, 4.0),
-    T.walk(-1.2, 2.5),
+    T.walk(-4.8, 6.5),
+    T.walk(-4.8, 4.0),
+    T.walk(-1.6, 2.4),
     T.face(FACE.s),
-    T.anim("work", 1.5),
+    T.anim("work", 1.8),
     T.call((q) => {
       if (customerCarpet) customerCarpet.visible = false;
       q.carry = null;
@@ -3211,56 +3282,150 @@ function startCustomerDropoff() {
     }),
     T.walk(-4.2, 2.6),
     T.face(FACE.s),
-    T.anim("talk", 3.0),
-    T.walk(-5.2, 4.0),
-    T.walk(-5.2, 6.4),
-    T.walk(-5.2, 7.5),
+    T.anim("talk", 3.2),
+    T.anim("idle", 0.6),
+    T.walk(-4.8, 4.0),
+    T.walk(-4.8, 6.5),
+    T.walk(-4.3, 8.2),
+    T.face(FACE.w),
     T.call((q) => {
       q.root.visible = false;
-      customerCarState = "driving_home";
-      customerT = 0;
+      customerCarState = "ready_to_drive_home";
+      customerTimer = 1.0;
     })
   );
 }
 
-function updateCustomerCar(dt) {
-  if (!customerCar) return;
+function updateCustomerCar(dt, time = 0) {
+  if (!customerCar || !custPathTo || !custPathHome) return;
+
+  const blinkOn = (time % 0.8) < 0.4;
+  const l = (customerCar.signal === "left" || customerCar.signal === "hazard") && blinkOn;
+  const r = (customerCar.signal === "right" || customerCar.signal === "hazard") && blinkOn;
+  if (customerCar.signalMeshes) {
+    customerCar.signalMeshes.L.forEach((m) => (m.visible = l));
+    customerCar.signalMeshes.R.forEach((m) => (m.visible = r));
+  }
+
   if (customerCarState === "at_home") {
-    customerCar.root.position.set(24.0, ROAD_TOP, 16.5);
-    customerCar.root.lookAt(24.0, ROAD_TOP, 10.0);
+    customerCar.signal = null;
+    custSpeed = 0;
     customerTimer -= dt;
     if (customerTimer <= 0) {
       customerCarState = "driving_to_company";
-      customerT = 0;
+      custDist = 0;
+      custSpeed = 0;
     }
   } else if (customerCarState === "driving_to_company") {
-    const sp = 7.0;
-    customerT = Math.min(1, customerT + (sp * dt) / CUST_LEN_TO);
-    const p = CUST_PATH_TO.getPointAt(customerT);
-    const tAhead = Math.min(1, customerT + 0.04);
-    const pAhead = CUST_PATH_TO.getPointAt(tAhead);
+    const totalLen = custLenTo;
+    const t = Math.min(1, custDist / totalLen);
+
+    let targetSpeed = 5.8;
+    if (t < 0.22) {
+      targetSpeed = 3.0;
+      customerCar.signal = "left";
+    } else if (t > 0.72) {
+      const rem = totalLen - custDist;
+      targetSpeed = THREE.MathUtils.clamp(rem * 0.55, 0.4, 3.2);
+      customerCar.signal = "left";
+    } else {
+      customerCar.signal = null;
+    }
+
+    custSpeed += THREE.MathUtils.clamp(targetSpeed - custSpeed, -4.5 * dt, 2.4 * dt);
+    custDist += custSpeed * dt;
+
+    const curT = THREE.MathUtils.clamp(custDist / totalLen, 0, 1);
+    const p = custPathTo.getPointAt(curT);
+    const aheadT = Math.min(1, curT + 0.03);
+    const pAhead = custPathTo.getPointAt(aheadT);
+
     customerCar.root.position.copy(p);
-    customerCar.root.lookAt(pAhead.x, ROAD_TOP, pAhead.z);
-    customerCar.wheels.forEach((w) => (w.rotation.x += (sp * dt) / customerCar.wheelRadius));
-    if (customerT >= 1) {
+
+    const fwd = pAhead.clone().sub(p);
+    if (fwd.lengthSq() > 0.0001) {
+      const targetYaw = Math.atan2(fwd.x, fwd.z);
+      let dyaw = targetYaw - customerCar.root.rotation.y;
+      while (dyaw > Math.PI) dyaw -= Math.PI * 2;
+      while (dyaw < -Math.PI) dyaw += Math.PI * 2;
+      customerCar.root.rotation.y += dyaw * Math.min(1, dt * 8);
+    }
+
+    if (customerCar.steer && customerCar.steer.length) {
+      const localLook = customerCar.root.worldToLocal(pAhead.clone());
+      const steerTarget = THREE.MathUtils.clamp(Math.atan2(localLook.x, Math.max(0.3, Math.abs(localLook.z))) * 1.3, -0.6, 0.6);
+      customerCar.steerAngle = (customerCar.steerAngle || 0) + (steerTarget - (customerCar.steerAngle || 0)) * Math.min(1, dt * 7);
+      customerCar.steer.forEach((pivot) => (pivot.rotation.y = customerCar.steerAngle));
+    }
+
+    customerCar.wheels.forEach((w) => (w.rotation.x += (custSpeed * dt) / (customerCar.wheelRadius || 0.37)));
+
+    if (custDist >= totalLen) {
+      custSpeed = 0;
+      customerCar.signal = "hazard";
       customerCarState = "parked_at_company";
       startCustomerDropoff();
     }
   } else if (customerCarState === "parked_at_company") {
-    customerCar.root.position.set(-5.2, ROAD_TOP, 8.5);
-    customerCar.root.lookAt(-10.0, ROAD_TOP, 8.5);
+    custSpeed = 0;
+    customerCar.signal = "hazard";
+  } else if (customerCarState === "ready_to_drive_home") {
+    customerCar.signal = "left";
+    customerTimer -= dt;
+    if (customerTimer <= 0) {
+      customerCarState = "driving_home";
+      custDist = 0;
+      custSpeed = 0;
+    }
   } else if (customerCarState === "driving_home") {
-    const sp = 7.5;
-    customerT = Math.min(1, customerT + (sp * dt) / CUST_LEN_HOME);
-    const p = CUST_PATH_HOME.getPointAt(customerT);
-    const tAhead = Math.min(1, customerT + 0.04);
-    const pAhead = CUST_PATH_HOME.getPointAt(tAhead);
+    const totalLen = custLenHome;
+    const t = Math.min(1, custDist / totalLen);
+
+    let targetSpeed = 5.8;
+    if (t < 0.24) {
+      targetSpeed = 3.0;
+      customerCar.signal = "left";
+    } else if (t > 0.72) {
+      const rem = totalLen - custDist;
+      targetSpeed = THREE.MathUtils.clamp(rem * 0.55, 0.4, 3.2);
+      customerCar.signal = "right";
+    } else {
+      customerCar.signal = null;
+    }
+
+    custSpeed += THREE.MathUtils.clamp(targetSpeed - custSpeed, -4.5 * dt, 2.4 * dt);
+    custDist += custSpeed * dt;
+
+    const curT = THREE.MathUtils.clamp(custDist / totalLen, 0, 1);
+    const p = custPathHome.getPointAt(curT);
+    const aheadT = Math.min(1, curT + 0.03);
+    const pAhead = custPathHome.getPointAt(aheadT);
+
     customerCar.root.position.copy(p);
-    customerCar.root.lookAt(pAhead.x, ROAD_TOP, pAhead.z);
-    customerCar.wheels.forEach((w) => (w.rotation.x += (sp * dt) / customerCar.wheelRadius));
-    if (customerT >= 1) {
+
+    const fwd = pAhead.clone().sub(p);
+    if (fwd.lengthSq() > 0.0001) {
+      const targetYaw = Math.atan2(fwd.x, fwd.z);
+      let dyaw = targetYaw - customerCar.root.rotation.y;
+      while (dyaw > Math.PI) dyaw -= Math.PI * 2;
+      while (dyaw < -Math.PI) dyaw += Math.PI * 2;
+      customerCar.root.rotation.y += dyaw * Math.min(1, dt * 8);
+    }
+
+    if (customerCar.steer && customerCar.steer.length) {
+      const localLook = customerCar.root.worldToLocal(pAhead.clone());
+      const steerTarget = THREE.MathUtils.clamp(Math.atan2(localLook.x, Math.max(0.3, Math.abs(localLook.z))) * 1.3, -0.6, 0.6);
+      customerCar.steerAngle = (customerCar.steerAngle || 0) + (steerTarget - (customerCar.steerAngle || 0)) * Math.min(1, dt * 7);
+      customerCar.steer.forEach((pivot) => (pivot.rotation.y = customerCar.steerAngle));
+    }
+
+    customerCar.wheels.forEach((w) => (w.rotation.x += (custSpeed * dt) / (customerCar.wheelRadius || 0.37)));
+
+    if (custDist >= totalLen) {
+      custSpeed = 0;
+      customerCar.signal = null;
       customerCarState = "at_home";
-      customerTimer = 22.0;
+      customerTimer = 25.0;
     }
   }
 }
@@ -3304,7 +3469,9 @@ function washerIntakeJob(w) {
   );
 }
 
+let peopleReady = false;
 function spawnPeople() {
+  peopleReady = true;
   PED_GRAPH = buildSidewalkGraph();
   const S = SKINS;
   // 1. Reception: Front room is EXCLUSIVELY "Прием партии"
@@ -3393,7 +3560,7 @@ function animate() {
 
   // 1. Traffic: company trucks (with pickups), civilian cars, customer car
   updateVehicles(dt, clock.elapsedTime);
-  updateCustomerCar(dt);
+  updateCustomerCar(dt, clock.elapsedTime);
   updatePeople(dt, clock.elapsedTime);
 
   // 2. Smooth Camera Lerp
