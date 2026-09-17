@@ -1912,13 +1912,26 @@ const WASH_DOCKS = [0, 1];
 const PACK_DOCK = 2;
 const LOOP_V1 = [P(V[1], MAIN), P(W, MAIN), P(W, S1), P(V[1], S1)];
 const LOOP_V2 = [P(V[2], MAIN), P(W, MAIN), P(W, S1), P(V[2], S1)];
+// Houses with resident cars (or customer car) parked in their driveways:
+// Company trucks MUST NEVER visit any house in this set!
+const HOUSES_WITH_CARS = new Map([
+  [0, "customer"],  // House 0: Customer's house (red muscle car visits Darkhost)
+  [3, "sport"],     // House 3: Resident sport car in driveway
+  [6, "muscle"],    // House 6: Resident muscle car in driveway
+  [8, "sport"],     // House 8: Resident sport car in driveway
+  [11, "muscle"],   // House 11: Resident muscle car in driveway
+  [14, "sport"],    // House 14: Resident sport car in driveway
+  [17, "muscle"],   // House 17: Resident muscle car in driveway
+]);
+
 const run = (pick, wash, drop) => [{ house: pick, kind: "pickup" }, { dock: wash, kind: "unload" }, { dock: PACK_DOCK, kind: "collect" }, { house: drop, kind: "deliver" }];
+// All houses visited below (1, 2, 4, 5, 7, 9, 10, 12, 13, 15, 16, 18, 19) have empty driveways (ZERO cars)
 const TRUCK_ROUTES = [
-  { plate: "0101 DH 01", loop: LOOP_V1, stall: 0, stops: [{ stall: 0, kind: "base" }, ...run(2, WASH_DOCKS[0], 12), ...run(3, WASH_DOCKS[0], 13)] },
-  { plate: "0102 DH 01", loop: LOOP_V2, stall: 1, stops: [{ stall: 1, kind: "base" }, ...run(7, WASH_DOCKS[1], 17), ...run(8, WASH_DOCKS[1], 16)] },
-  { plate: "0103 DH 01", loop: LOOP_V2, stall: 2, stops: [{ stall: 2, kind: "base" }, ...run(4, WASH_DOCKS[0], 10), ...run(1, WASH_DOCKS[1], 15)] },
-  { plate: "0104 DH 01", loop: LOOP_V2, stall: 3, stops: [{ stall: 3, kind: "base" }, ...run(6, WASH_DOCKS[1], 18), ...run(9, WASH_DOCKS[0], 19)] },
-  { plate: "0105 DH 01", loop: LOOP_V2, stall: 4, stops: [{ stall: 4, kind: "base" }, ...run(5, WASH_DOCKS[0], 14), ...run(0, WASH_DOCKS[1], 11)] },
+  { plate: "0101 DH 01", loop: LOOP_V1, stall: 0, stops: [{ stall: 0, kind: "base" }, ...run(2, WASH_DOCKS[0], 12), ...run(4, WASH_DOCKS[0], 13)] },
+  { plate: "0102 DH 01", loop: LOOP_V2, stall: 1, stops: [{ stall: 1, kind: "base" }, ...run(7, WASH_DOCKS[1], 16), ...run(9, WASH_DOCKS[1], 19)] },
+  { plate: "0103 DH 01", loop: LOOP_V2, stall: 2, stops: [{ stall: 2, kind: "base" }, ...run(1, WASH_DOCKS[0], 10), ...run(5, WASH_DOCKS[0], 15)] },
+  { plate: "0104 DH 01", loop: LOOP_V2, stall: 3, stops: [{ stall: 3, kind: "base" }, ...run(2, WASH_DOCKS[1], 18), ...run(7, WASH_DOCKS[1], 16)] },
+  { plate: "0105 DH 01", loop: LOOP_V2, stall: 4, stops: [{ stall: 4, kind: "base" }, ...run(5, WASH_DOCKS[0], 15), ...run(1, WASH_DOCKS[1], 10)] },
 ];
 const DOCK_TARGETS = DOCK_BAYS.map((b) => ({
   isDock: true,
@@ -1936,14 +1949,11 @@ const STALL_TARGETS = VAN_STALLS.map((st) => ({
   doorPoint: new THREE.Vector3(-20.9, 0.09, -6.5),
 }));
 const DRIVERS_DOOR = { x: -20.8, zOut: CAMPUS.zBack - 0.9, zIn: CAMPUS.zBack + 0.9 };
+// Streamlined civilian traffic: 3 distinct cars well spaced to prevent traffic jams / "каша"
 const CIVIL_ROUTES = [
-  { kind: "police", loop: [P(W, MAIN), P(V[2], MAIN), P(V[2], S1), P(W, S1)], start: 0.1, maxSpeed: 6.5 },
-  { kind: "muscle", loop: [{ x: V[0], z: MAIN }, { x: V[2], z: MAIN }, { x: V[2], z: S1 }, { x: V[0], z: S1 }], start: 0.6, maxSpeed: 6 },
-  // More cars on different loops (both directions) so every block carries traffic
-  { kind: "sport", loop: [P(W, S1), P(V[2], S1), P(V[2], MAIN), P(W, MAIN)], start: 0.35, maxSpeed: 7.2 },
-  { kind: "muscle", loop: [P(V[1], S1), P(V[0], S1), P(V[0], MAIN), P(V[1], MAIN)], start: 0.55, maxSpeed: 5.8 },
-  { kind: "sport", loop: [P(V[2], MAIN), P(V[1], MAIN), P(V[1], S1), P(V[2], S1)], start: 0.7, maxSpeed: 7.5 },
-  { kind: "muscle", loop: [P(V[0], S1), P(V[2], S1), P(V[2], MAIN), P(V[0], MAIN)], start: 0.25, maxSpeed: 6.0 },
+  { kind: "police", loop: [P(W, MAIN), P(V[2], MAIN), P(V[2], S1), P(W, S1)], start: 0.10, maxSpeed: 6.0 },
+  { kind: "sport", loop: [P(W, S1), P(V[2], S1), P(V[2], MAIN), P(W, MAIN)], start: 0.45, maxSpeed: 6.5 },
+  { kind: "muscle", loop: [P(V[1], S1), P(V[0], S1), P(V[0], MAIN), P(V[1], MAIN)], start: 0.80, maxSpeed: 5.8 },
 ];
 
 const vehicles = [];
@@ -1996,7 +2006,8 @@ const _d = new THREE.Vector3();
 function obstacleAhead(v, range = 16) {
   _fwd.set(0, 0, 1).applyQuaternion(v.root.quaternion);
   let best = null;
-  for (const o of vehicles) {
+  const list = customerCar && customerCar.root ? [...vehicles, { root: customerCar.root, speed: custSpeed, state: "drive", overtaking: null }] : vehicles;
+  for (const o of list) {
     if (o === v || o === v.overtaking) continue;
     _d.subVectors(o.root.position, v.root.position);
     const along = _d.dot(_fwd);
@@ -2008,7 +2019,7 @@ function obstacleAhead(v, range = 16) {
     if (crossing) {
       // Only yield to crossing traffic that is actually moving; the lower index goes first when both stopped
       if (lateral > 3.5 || along > 9) continue;
-      if (o.speed < 0.3 && (v.speed < 0.3 ? vehicles.indexOf(o) > vehicles.indexOf(v) : true)) continue;
+      if (o.speed < 0.3 && (v.speed < 0.3 ? list.indexOf(o) > list.indexOf(v) : true)) continue;
     } else {
       if (lateral > 2.0) continue;
       if (dot < -0.5) continue; // oncoming lane
@@ -2327,17 +2338,14 @@ function setupVehicles() {
     placeOnPath(car, car.s);
   });
 
-  // Residents' cars stand in their own driveways, and only at houses no van ever visits:
-  // the street-side parking lane stays empty so a reversing van never sweeps through a parked car.
-  const parkedKinds = ["muscle", "sport", "police", "sport", "muscle"];
-  const served = new Set(TRUCK_ROUTES.flatMap((r) => r.stops.filter((st) => st.house != null).map((st) => st.house)));
-  let pk = 0;
-  HOUSE_LOTS.forEach((lot, i) => {
-    if (i === 0) return; // Reserved for the customer who visits Darkhost with a carpet
-    if (served.has(i) || served.has(i - 1) || served.has(i + 1)) return; // keep the neighbours clear too
-    if (rnd() > 0.5) return;
-    const v = spawnVehicle(parkedKinds[pk++ % parkedKinds.length]);
-    const z = lot.parkPoint.z - lot.face * 1.2; // a little deeper into the driveway than the van's stop point
+  // Residents' cars stand in their own driveways (only at houses defined in HOUSES_WITH_CARS)
+  HOUSES_WITH_CARS.forEach((kind, houseIdx) => {
+    if (houseIdx === 0) return; // House 0 is reserved for customerCar
+    const lot = HOUSE_LOTS[houseIdx];
+    if (!lot) return;
+    const v = spawnVehicle(kind);
+    addSteering(v);
+    const z = lot.parkPoint.z - lot.face * 1.4; // parked neatly in the driveway in front of the garage
     v.root.position.set(lot.drivewayX, ROAD_TOP, z);
     v.root.lookAt(lot.drivewayX, ROAD_TOP, z - lot.face * 4); // nose toward the garage
     worldGroup.add(v.root);
@@ -3444,6 +3452,20 @@ function updateCustomerCar(dt, time = 0) {
       customerCar.signal = null;
     }
 
+    // Safety distance: yield to any vehicle ahead within 8m
+    for (const other of vehicles) {
+      if (!other.root) continue;
+      const toOther = other.root.position.clone().sub(customerCar.root.position);
+      const dist = toOther.length();
+      if (dist < 8.0) {
+        const carFwd = new THREE.Vector3(0, 0, 1).applyQuaternion(customerCar.root.quaternion);
+        const dot = toOther.normalize().dot(carFwd);
+        if (dot > 0.45) {
+          targetSpeed = Math.min(targetSpeed, THREE.MathUtils.clamp((dist - 3.8) * 1.2, 0, 2.2));
+        }
+      }
+    }
+
     custSpeed += THREE.MathUtils.clamp(targetSpeed - custSpeed, -4.5 * dt, 2.4 * dt);
     custDist += custSpeed * dt;
 
@@ -3503,6 +3525,20 @@ function updateCustomerCar(dt, time = 0) {
       customerCar.signal = "right";
     } else {
       customerCar.signal = null;
+    }
+
+    // Safety distance: yield to any vehicle ahead within 8m
+    for (const other of vehicles) {
+      if (!other.root) continue;
+      const toOther = other.root.position.clone().sub(customerCar.root.position);
+      const dist = toOther.length();
+      if (dist < 8.0) {
+        const carFwd = new THREE.Vector3(0, 0, 1).applyQuaternion(customerCar.root.quaternion);
+        const dot = toOther.normalize().dot(carFwd);
+        if (dot > 0.45) {
+          targetSpeed = Math.min(targetSpeed, THREE.MathUtils.clamp((dist - 3.8) * 1.2, 0, 2.2));
+        }
+      }
     }
 
     custSpeed += THREE.MathUtils.clamp(targetSpeed - custSpeed, -4.5 * dt, 2.4 * dt);
